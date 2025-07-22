@@ -1008,8 +1008,6 @@ Evaluation 30/30: SELF_REFLECT
     Step 9: INCORRECT - Predicted: CLICK("⌫") | Expected: STATUS("complete")
   Results: 1/9 correct steps (11.1%), Episode: FAILED
 
-Results saved to: part_c_results.csv
-
 ================================================================================
 PART C: COMPREHENSIVE BENCHMARKING ANALYSIS
 ================================================================================
