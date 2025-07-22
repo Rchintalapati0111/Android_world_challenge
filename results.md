@@ -1049,7 +1049,7 @@ DATASET OVERVIEW
 |--------------------------------|---------------|
 | Failed Episodes                | 22 / 30 (73.3%) |
 | Zero Step Accuracy             | 8 / 30 (26.7%)  |
-| High Hallucination Episodes (>10%) | 4 / 30          |
+| High Hallucination Episodes (>10%) | 4 / 30 (13.34%)        |
 
 
 WHERE LLMs FAIL:
