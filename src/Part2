@@ -1,0 +1,570 @@
+#!/usr/bin/env python3
+"""
+IMPROVED Android Agent Evaluation with Better Few-Shot Prompting
+"""
+import gzip
+import pickle
+import glob
+import csv
+import re
+import os
+import json
+import openai
+from typing import List, Dict, Tuple, Optional
+from rapidfuzz import fuzz, process
+
+
+ZERO_SHOT = """\
+Goal: {goal}
+
+You are an autonomous agent controlling an Android UI.
+Below is the current screen's list of visible elements:
+
+{obs}
+
+Instructions:
+1. Pick exactly one action that moves you toward the goal.
+2. Only click or open elements that appear in the list above.
+3. When done, use STATUS("complete").
+4. Respond with exactly: Action: [your_action]
+
+Available actions:
+- CLICK("element_text") - click on UI element by its visible text/description
+- OPEN_APP("app_name") - open an application
+- INPUT_TEXT("text") - type text into a field
+- SCROLL("direction") - scroll up/down/left/right
+- STATUS("complete") - when task is finished
+
+Example: Action: CLICK("Camera")
+
+Your turn:
+"""
+
+IMPROVED_FEW_SHOT = """\
+You are an Android UI automation agent. Your goal is: {goal}
+
+{history}
+
+Here are examples of good agent behavior:
+
+Example 1:
+Goal: Take a photo
+History: No previous actions taken.
+Visible elements:
+- Phone
+- Messages  
+- Chrome
+- Gmail
+- Photos
+- Search
+Reasoning: I need to open the Camera app to take a photo, but I don't see it in the current elements. I should look for a camera-related app or use search.
+Action: OPEN_APP("Camera")
+
+Example 2:
+Goal: Take a photo
+History: Step 1 - OPEN_APP("Camera") - Successfully opened Camera app
+Visible elements:
+- Options
+- Shutter
+- MODE LIST
+- FILMSTRIP
+- Z-
+- Z+
+Reasoning: Camera is now open and I can see the Shutter button. I'll click it to take the photo.
+Action: CLICK("Shutter")
+
+Example 3:
+Goal: Create a timer with 5 minutes
+History: Step 1 - OPEN_APP("Clock") - Opened Clock app
+Visible elements:
+- Timer
+- Alarm
+- World Clock
+- Stopwatch
+Reasoning: I'm in the Clock app and need to access the Timer function to set a 5-minute timer.
+Action: CLICK("Timer")
+
+Example 4:
+Goal: Create a new contact for John Smith
+History: 
+Step 1 - OPEN_APP("Contacts") - Opened Contacts app
+Step 2 - CLICK("Add") - Clicked add contact button
+Visible elements:
+- First name
+- Last name
+- Phone
+- Email
+- Save
+- Cancel
+Reasoning: I'm in the add contact form. I need to fill in the first name field with "John".
+Action: INPUT_TEXT("John")
+
+Now your turn:
+Goal: {goal}
+{history}
+Visible elements:
+{obs}
+Reasoning: 
+Action: 
+"""
+
+SELF_REFLECTION = """\
+Goal: {goal}
+
+{history}
+
+Current visible UI elements:
+{obs}
+
+Please follow these steps:
+1. Analyze the goal and current situation
+2. Consider what actions you've already taken (if any)
+3. Propose the next action: CLICK("element"), OPEN_APP("app"), INPUT_TEXT("text"), SCROLL("direction"), or STATUS("complete")
+4. Verify that your chosen element actually appears in the list above
+5. Provide your reasoning
+
+Format your response as:
+ANALYSIS: [Your analysis of the current situation and progress toward goal]
+ACTION: [Your proposed action]
+VERIFICATION: [Confirm the element exists in the list - true/false]
+REASONING: [Why this action moves toward the goal]
+"""
+
+API_KEY = os.environ.get("OPENAI_API_KEY")
+MODEL = "gpt-4"
+EPISODE_DIR = "runs/"
+PROMPTS = {
+    "zero_shot": ZERO_SHOT,
+    "few_shot_improved": IMPROVED_FEW_SHOT,
+    "self_reflect": SELF_REFLECTION,
+}
+
+def load_episode(path: str) -> Optional[Dict]:
+    """Load and parse android_world episode data"""
+    try:
+        with gzip.open(path, "rb") as f:
+            data = pickle.load(f)
+        
+        episode = data[0] if isinstance(data, (list, tuple)) else data
+        
+        if not isinstance(episode, dict):
+            print(f"Warning: Unexpected episode format in {path}")
+            return None
+            
+        return episode
+        
+    except Exception as e:
+        print(f"Error loading {path}: {e}")
+        return None
+
+def extract_ground_truth_actions(episode: Dict) -> List[str]:
+    """Extract ground truth actions from android_world episode data"""
+    
+    try:
+        action_outputs = episode["episode_data"]["action_output"]
+        
+        actions = []
+        for output in action_outputs:
+            action_json = extract_action_json_from_output(output)
+            if action_json:
+                simple_action = convert_android_action_to_simple(action_json)
+                if simple_action:
+                    actions.append(simple_action)
+        
+        return actions
+        
+    except KeyError as e:
+        print(f"Could not find action_output in episode data. Available keys: {list(episode.get('episode_data', {}).keys())}")
+        return []
+
+def extract_action_json_from_output(output_text: str) -> Optional[Dict]:
+    """Extract JSON action from action output text"""
+    
+    action_match = re.search(r'Action:\s*(\{[^}]+\})', output_text, re.DOTALL)
+    if action_match:
+        try:
+            action_json = json.loads(action_match.group(1))
+            return action_json
+        except json.JSONDecodeError:
+            pass
+    
+    json_match = re.search(r'\{[^}]*"action_type"[^}]*\}', output_text)
+    if json_match:
+        try:
+            action_json = json.loads(json_match.group(0))
+            return action_json
+        except json.JSONDecodeError:
+            pass
+    
+    return None
+
+def convert_android_action_to_simple(action_json: Dict) -> Optional[str]:
+    """Convert android_world action format to simple evaluation format"""
+    
+    action_type = action_json.get("action_type", "")
+    
+    if action_type == "open_app":
+        app_name = action_json.get("app_name", "Unknown")
+        return f'OPEN_APP("{app_name}")'
+    
+    elif action_type == "click":
+        index = action_json.get("index", 0)
+        return f'CLICK("element_{index}")'
+    
+    elif action_type == "status":
+        goal_status = action_json.get("goal_status", "complete")
+        return f'STATUS("{goal_status}")'
+    
+    elif action_type == "input_text":
+        text = action_json.get("text", "")
+        return f'INPUT_TEXT("{text}")'
+    
+    elif action_type == "scroll":
+        direction = action_json.get("direction", "down")
+        return f'SCROLL("{direction}")'
+    
+    elif action_type == "navigate_back":
+        return "NAVIGATE_BACK()"
+    
+    elif action_type == "navigate_home":
+        return "NAVIGATE_HOME()"
+    
+    else:
+        return f'UNKNOWN_ACTION("{action_type}")'
+
+def summarize_ui(ui_list: List) -> str:
+    """Convert UI element list to readable format"""
+    elements = []
+    for el in ui_list:
+        text = ""
+        
+        for attr in ['content_description', 'text', 'resource_name', 'resource_id', 'class_name']:
+            if hasattr(el, attr):
+                value = getattr(el, attr)
+                if value and str(value).strip():
+                    text = str(value).strip()
+                    break
+        
+        if not text:
+            text = "Unknown Element"
+            
+        elements.append(text)
+    
+    return "\n".join(f"- {elem}" for elem in elements if elem)
+
+def get_ui_element_list(ui_list: List) -> List[str]:
+    """Get clean list of UI elements for validation"""
+    elements = []
+    for el in ui_list:
+        for attr in ['content_description', 'text', 'resource_name']:
+            if hasattr(el, attr):
+                value = getattr(el, attr)
+                if value and str(value).strip():
+                    elements.append(str(value).strip())
+                    break
+    return elements
+
+def build_action_history(predictions: List[str], step_idx: int) -> str:
+    """Build action history string for prompts"""
+    if step_idx == 0:
+        return "History: No previous actions taken."
+    
+    history_lines = ["History:"]
+    for i, action in enumerate(predictions[:step_idx]):
+        history_lines.append(f"Step {i+1} - {action}")
+    
+    return "\n".join(history_lines)
+
+def call_llm(prompt: str) -> str:
+    """Call OpenAI API with error handling"""
+    try:
+        openai.api_key = API_KEY
+        resp = openai.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.0,
+        )
+        return resp.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"LLM API error: {e}")
+        return "ERROR: API call failed"
+
+def extract_action_zero_shot(response: str) -> Tuple[str, bool, str]:
+    """Extract action from zero-shot response"""
+    # Look for "Action: ..." pattern
+    action_match = re.search(r'Action:\s*(.+)', response, re.IGNORECASE)
+    if action_match:
+        action = action_match.group(1).strip()
+        return action, True, "Extracted from Action: pattern"
+    
+    # Fallback: look for action patterns
+    action_match = re.search(r'(CLICK\("[^"]+"\)|OPEN_APP\("[^"]+"\)|STATUS\("[^"]+"\)|INPUT_TEXT\("[^"]*"\)|SCROLL\("[^"]+"\))', response)
+    if action_match:
+        return action_match.group(1), True, "Extracted with regex"
+    
+    return "PARSE_ERROR", False, "Could not parse response"
+
+def extract_action_few_shot_improved(response: str) -> Tuple[str, bool, str]:
+    """Extract action from improved few-shot response"""
+    lines = response.strip().split('\n')
+    action = ""
+    reasoning = ""
+    
+    for line in lines:
+        line = line.strip()
+        if line.startswith("Action:"):
+            action = line.replace("Action:", "").strip()
+        elif line.startswith("Reasoning:"):
+            reasoning = line.replace("Reasoning:", "").strip()
+    
+    if not action:
+        action_match = re.search(r'(CLICK\("[^"]+"\)|OPEN_APP\("[^"]+"\)|STATUS\("[^"]+"\)|INPUT_TEXT\("[^"]*"\)|SCROLL\("[^"]+"\))', response)
+        if action_match:
+            action = action_match.group(1)
+    
+    return action, bool(action), reasoning
+
+def extract_action_self_reflect(response: str) -> Tuple[str, bool, str]:
+    """Extract action from self-reflection response"""
+    lines = response.strip().split('\n')
+    action = ""
+    reasoning = ""
+    
+    for line in lines:
+        line = line.strip()
+        if line.startswith("ACTION:"):
+            action = line.replace("ACTION:", "").strip()
+        elif line.startswith("REASONING:"):
+            reasoning = line.replace("REASONING:", "").strip()
+    
+    if not action:
+        action_match = re.search(r'(CLICK\("[^"]+"\)|OPEN_APP\("[^"]+"\)|STATUS\("[^"]+"\)|INPUT_TEXT\("[^"]*"\)|SCROLL\("[^"]+"\))', response)
+        if action_match:
+            action = action_match.group(1)
+    
+    return action, bool(action), reasoning
+
+def check_hallucination(action: str, available_elements: List[str], threshold: float = 80.0) -> bool:
+    """Check if action refers to non-existent UI elements using fuzzy matching"""
+    click_match = re.match(r'CLICK\("(.+)"\)', action)
+    
+    if click_match:
+        target = click_match.group(1).strip()
+        
+        # For element_X pattern (android_world format)
+        if target.startswith("element_"):
+            return False
+        
+        # Skip empty targets
+        if not target or not available_elements:
+            return True
+            
+        # Use rapidfuzz for more sophisticated matching
+        best_match, best_score, _ = process.extractOne(
+            target, 
+            available_elements,
+            scorer=fuzz.partial_ratio  # partial_ratio works well for UI elements
+        )
+        
+        if best_score >= threshold:
+            print(f"    Fuzzy match: '{target}' → '{best_match}' (score: {best_score:.1f})")
+            return False  # Not hallucinated - good match found
+        
+        # Fallback: try token-based matching for multi-word elements
+        target_tokens = set(target.lower().split())
+        for elem in available_elements:
+            elem_tokens = set(elem.lower().split())
+            # If significant overlap in tokens, consider it a match
+            if target_tokens and elem_tokens:
+                overlap = len(target_tokens & elem_tokens) / len(target_tokens | elem_tokens)
+                if overlap >= 0.5:  # 50% token overlap
+                    print(f"    Token match: '{target}' → '{elem}' (overlap: {overlap:.2f})")
+                    return False
+        
+        print(f"    Hallucination: '{target}' not found in UI elements (best score: {best_score:.1f})")
+        return True  # Hallucinated - no good match found
+    
+    return False  # Non-CLICK actions are assumed valid
+
+def evaluate_variant(variant_name: str, template: str, episode_paths: List[str]) -> List[Dict]:
+    """Evaluate a single prompt variant on multiple episodes"""
+    print(f"\n=== Evaluating {variant_name} ===")
+    
+    extraction_funcs = {
+        "zero_shot": extract_action_zero_shot,
+        "few_shot_improved": extract_action_few_shot_improved,
+        "self_reflect": extract_action_self_reflect,
+    }
+    
+    extract_func = extraction_funcs.get(variant_name, extract_action_few_shot_improved)
+    
+    rows = []
+    for i, ep_path in enumerate(episode_paths):
+        print(f"Processing episode {i+1}/{len(episode_paths)}: {os.path.basename(ep_path)}")
+        
+        episode = load_episode(ep_path)
+        if not episode:
+            continue
+            
+        goal = episode.get("goal", "Unknown goal")
+        uis = episode.get("episode_data", {}).get("before_element_list", [])
+        truth_actions = extract_ground_truth_actions(episode)
+        
+        if not truth_actions:
+            print(f"  No ground truth actions found - skipping episode")
+            continue
+        
+        if not uis:
+            print(f"  No UI observations found - skipping episode")
+            continue
+        
+        print(f"  Found {len(truth_actions)} ground truth actions and {len(uis)} UI states")
+        print(f"  Goal: {goal}")
+        print(f"  Truth actions: {truth_actions}")
+
+        preds = []
+        hallucinations = 0
+        parse_errors = 0
+        
+        num_steps = min(len(uis), len(truth_actions))
+        
+        for step_idx in range(num_steps):
+            ui = uis[step_idx]
+            obs = summarize_ui(ui)
+            available_elements = get_ui_element_list(ui)
+            
+            if not obs.strip():
+                print(f"  Step {step_idx}: Empty UI observation")
+                preds.append("SKIP_EMPTY_UI")
+                continue
+            
+            # Build action history for context: 
+
+            if variant_name in ["few_shot_improved", "self_reflect"]:
+                history = build_action_history(preds, step_idx)
+                prompt = template.format(goal=goal, obs=obs, history=history)
+            else:
+                prompt = template.format(goal=goal, obs=obs)
+            
+            llm_response = call_llm(prompt)
+            
+            # Extract action using variant-specific function: 
+
+            action, parse_success, reasoning = extract_func(llm_response)
+            
+            if not parse_success:
+                parse_errors += 1
+                print(f"  Step {step_idx}: Parse error - {action}")
+            
+            # Check for hallucinations with improved fuzzy matching: 
+                
+            is_hallucinated = check_hallucination(action, available_elements, threshold=80.0)
+            if is_hallucinated:
+                hallucinations += 1
+                print(f"  Step {step_idx}: Hallucination detected - {action}")
+            
+            preds.append(action)
+
+        # Calculate metrics: 
+            
+        matches = sum(1 for p, g in zip(preds, truth_actions[:len(preds)]) if p == g)
+        step_acc = matches / len(preds) if preds else 0
+        ep_success = any('complete' in p.lower() for p in preds)
+        halluc_rate = hallucinations / len(preds) if preds else 0
+        parse_error_rate = parse_errors / len(preds) if preds else 0
+
+        result = {
+            "episode": ep_path,
+            "variant": variant_name,
+            "step_accuracy": step_acc,
+            "episode_success": ep_success,
+            "hallucination_rate": halluc_rate,
+            "parse_error_rate": parse_error_rate,
+            "total_steps": len(truth_actions),
+            "correct_steps": matches,
+            "truth": truth_actions[:len(preds)],
+            "preds": preds,
+        }
+        
+        rows.append(result)
+        print(f"  Results: {matches}/{len(preds)} correct, Success: {ep_success}")
+
+    return rows
+
+def main():
+    """Main evaluation loop"""
+    print("IMPROVED Android Agent Evaluation Framework")
+    print("=" * 60)
+    
+    if not API_KEY:
+        print("Error: OPENAI_API_KEY environment variable not set!")
+        return
+    
+    # Find episode files: 
+
+    episode_patterns = [
+        f"{EPISODE_DIR}/run_*/CameraTakePhoto_*.pkl.gz",
+        f"{EPISODE_DIR}/run_*/ContactsAddContact_*.pkl.gz",
+        f"{EPISODE_DIR}/run_*/FilesMoveFile_*.pkl.gz",
+        f"{EPISODE_DIR}/run_*/SystemBrightnessMax_*.pkl.gz"
+    ]
+    
+    ep_files = []
+    for pattern in episode_patterns:
+        found = glob.glob(pattern)
+        if found:
+            ep_files.extend(found[:1])
+    
+    if not ep_files:
+        print("No episode files found! Check EPISODE_DIR path.")
+        return
+    
+    print(f"Found {len(ep_files)} episodes to evaluate")
+    for ep in ep_files:
+        print(f"  - {os.path.basename(ep)}")
+
+    # Run evaluation for each prompt variant: 
+        
+    all_results = []
+    for name, template in PROMPTS.items():
+        variant_results = evaluate_variant(name, template, ep_files)
+        all_results.extend(variant_results)
+
+    if not all_results:
+        print("No results generated! Check data format and action extraction.")
+        return
+
+    # Print summary statistics
+    print(f"\n=== SUMMARY STATISTICS ===")
+    
+    for variant in PROMPTS.keys():
+        variant_results = [r for r in all_results if r["variant"] == variant]
+        if variant_results:
+            avg_step_acc = sum(r["step_accuracy"] for r in variant_results) / len(variant_results)
+            success_rate = sum(r["episode_success"] for r in variant_results) / len(variant_results)
+            avg_halluc = sum(r["hallucination_rate"] for r in variant_results) / len(variant_results)
+            avg_parse_err = sum(r["parse_error_rate"] for r in variant_results) / len(variant_results)
+            
+            print(f"\n{variant.upper()}:")
+            print(f"  Average Step Accuracy: {avg_step_acc:.3f}")
+            print(f"  Episode Success Rate: {success_rate:.3f}")
+            print(f"  Hallucination Rate: {avg_halluc:.3f}")
+            print(f"  Parse Error Rate: {avg_parse_err:.3f}")
+
+    # Print per-episode breakdown
+    print(f"\n=== PER-EPISODE BREAKDOWN ===")
+    for result in all_results:
+        episode_name = os.path.basename(result['episode'])
+        print(f"\nEpisode: {episode_name} ({result['variant']})")
+        print(f"  Step Accuracy: {result['step_accuracy']:.3f}")
+        print(f"  Episode Success: {result['episode_success']}")
+        print(f"  Steps: {result['correct_steps']}/{len(result['preds'])}")
+        
+        # Show step-by-step comparison
+        print("  Step-by-step:")
+        for i, (pred, truth) in enumerate(zip(result['preds'], result['truth'])):
+            match_symbol = "✓" if pred == truth else "✗"
+            print(f"    {i+1}: {match_symbol} Pred: {pred[:50]}... | Truth: {truth[:50]}...")
+
+if __name__ == "__main__":
+    main()
