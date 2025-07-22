@@ -23,7 +23,7 @@ The following table has the information -
 Prompt Variant	Step Accuracy	Episode Success Rate	Hallucination Rate
 Zero-Shot	       10.9%	            0.0%	               1.5%
 Few-Shot	       25.6%	           40.0%	               4.0%
-Self-Reflection	   18.4%	           40.0%	               5.3%
+Self-Reflection	 18.4%	           40.0%	               5.3%
 
 Where, 
 
@@ -108,6 +108,10 @@ B. Why LLMs Fail ?
 - Implement search + verification sub-agents to validate UI presence before acting
 
 - Try tool-augmented prompting (e.g., function calling) for stricter outputs
+
+Learnings: 
+
+This project was one of the most exciting explorations I’ve participated in - prompting and evaluating Android-based LLM agents. I learned how even small changes in prompt design, like providing few-shot examples or asking the model to self-reflect, can significantly impact an agent’s reasoning and performance. Implementing fuzzy matching (RapidFuzz) taught me how to bridge the gap between model predictions and ground-truth data. I understood the limitations of LLMs in real-life applications, like the tendency to hallucinate, forgetting past steps, or misinterpreting UI semantics. 
 
 
 
