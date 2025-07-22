@@ -20,10 +20,13 @@ I evaluated 10 episodes (5 unique × 2 variants) using all three prompt styles, 
 
 The following table has the information - 
 
-Prompt Variant	Step Accuracy	Episode Success Rate	Hallucination Rate
-Zero-Shot	       10.9%	            0.0%	               1.5%
-Few-Shot	       25.6%	           40.0%	               4.0%
-Self-Reflection	 18.4%	           40.0%	               5.3%
+Prompting Strategy Comparison
+
+| Prompt Variant    | Step Accuracy | Episode Success Rate | Hallucination Rate |
+|-------------------|---------------|-----------------------|--------------------|
+| Zero-Shot         | 10.9%         | 0.0%                  | 1.5%               |
+| Few-Shot          | 25.6%         | 40.0%                 | 4.0%               |
+| Self-Reflection   | 18.4%         | 40.0%                 | 5.3%               |
 
 Where, 
 
