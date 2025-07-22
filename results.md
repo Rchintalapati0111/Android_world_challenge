@@ -443,7 +443,7 @@ Part 3: Benchmarking & Report
 
 (android_world_py310) renukachintalapati@Renukas-MacBook-Pro android_world % python scripts/final_part3.py
 
-PART C EVALUATION: 10+ EPISODES FROM SINGLE DIRECTORY
+Part 3: Benchmarking & Report
 ======================================================================
 Found 5 episodes in runs/run_20250720T123202422603
 Base episodes found: 5
