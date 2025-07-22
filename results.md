@@ -1033,22 +1033,24 @@ DATASET OVERVIEW
 2. TASK-SPECIFIC PERFORMANCE
 ------------------------------------------------------------
 
-| Task Name             | Episodes | Avg Steps | Step Accuracy    | Success Rate     | Difficulty  |
-|-----------------------|----------|-----------|------------------|------------------|-------------|
-| CameraTakePhoto       | 6        | 3.0       | 0.444 (44.4%)    | 0.667 (66.7%)    | EASY        |
-| ClockTimerEntry       | 6        | 9.0       | 0.111 (11.1%)    | 0.000 (0.0%)     | HARD        |
-| ContactsAddContact    | 6        | 8.0       | 0.208 (20.8%)    | 0.667 (66.7%)    | MEDIUM      |
-| FilesMoveFile         | 6        | 20.0      | 0.033 (3.3%)     | 0.000 (0.0%)     | VERY HARD   |
-| SystemBrightnessMax   | 6        | 10.0      | 0.117 (11.7%)    | 0.000 (0.0%)     | HARD        |
+| Task Name             | Episodes | Avg Steps | Step Accuracy    | Success Rate     | 
+|-----------------------|----------|-----------|------------------|------------------|
+| CameraTakePhoto       | 6        | 3.0       | 0.444 (44.4%)    | 0.667 (66.7%)    | 
+| ClockTimerEntry       | 6        | 9.0       | 0.111 (11.1%)    | 0.000 (0.0%)     | 
+| ContactsAddContact    | 6        | 8.0       | 0.208 (20.8%)    | 0.667 (66.7%)    |
+| FilesMoveFile         | 6        | 20.0      | 0.033 (3.3%)     | 0.000 (0.0%)     | 
+| SystemBrightnessMax   | 6        | 10.0      | 0.117 (11.7%)    | 0.000 (0.0%)     | 
 
 
 3. FAILURE ANALYSIS: WHERE & WHY LLMs GO WRONG
 ------------------------------------------------------------
 
-FAILURE STATISTICS:
-   Failed Episodes: 22/30 (73.3%)
-   Zero Step Accuracy: 8/30 (26.7%)
-   High Hallucination (>10%): 4/30
+| Metric                         | Value         |
+|--------------------------------|---------------|
+| Failed Episodes                | 22 / 30 (73.3%) |
+| Zero Step Accuracy             | 8 / 30 (26.7%)  |
+| High Hallucination Episodes (>10%) | 4 / 30          |
+
 
 WHERE LLMs FAIL:
    • Complex Navigation: Multi-step file operations, deep UI traversal
