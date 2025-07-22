@@ -1,4 +1,5 @@
 Part 1: Setup & Agent Framework Scaffold
+======================================================================
 
 (android_world_py310) renukachintalapati@Renukas-MacBook-Pro android_world % python scripts/load_file.py \
   --episode runs/run_20250720T123202422603/CameraTakePhoto_0.pkl.gz \
@@ -65,6 +66,7 @@ Running full episode…
 
 
  Part 2: Prompting & Evaluation Strategy
+ ======================================================================
 
  (android_world_py310) renukachintalapati@Renukas-MacBook-Pro android_world % python scripts/second_part.py
 IMPROVED Android Agent Evaluation Framework
