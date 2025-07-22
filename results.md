@@ -1023,20 +1023,12 @@ DATASET OVERVIEW
 1. AVERAGE STEP ACCURACY AND EPISODE SUCCESS RATE
 ------------------------------------------------------------
 
-FEW SHOT:
-   Average Step Accuracy: 0.256 (25.6%)
-   Episode Success Rate: 0.400 (40.0%)
-   Hallucination Rate: 0.040 (4.0%)
+| Prompt Variant   | Avg. Step Accuracy | Episode Success Rate | Hallucination Rate |
+|------------------|---------------------|-----------------------|--------------------|
+| Few-Shot         | 0.256 (25.6%)       | 0.400 (40.0%)         | 0.040 (4.0%)       |
+| Self-Reflection  | 0.184 (18.4%)       | 0.400 (40.0%)         | 0.053 (5.3%)       |
+| Zero-Shot        | 0.109 (10.9%)       | 0.000 (0.0%)          | 0.015 (1.5%)       |
 
-SELF REFLECT:
-   Average Step Accuracy: 0.184 (18.4%)
-   Episode Success Rate: 0.400 (40.0%)
-   Hallucination Rate: 0.053 (5.3%)
-
-ZERO SHOT:
-   Average Step Accuracy: 0.109 (10.9%)
-   Episode Success Rate: 0.000 (0.0%)
-   Hallucination Rate: 0.015 (1.5%)
 
 2. TASK-SPECIFIC PERFORMANCE
 ------------------------------------------------------------
