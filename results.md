@@ -447,14 +447,19 @@ Part 3: Benchmarking & Report
 
 Part 3: Benchmarking & Report
 ======================================================================
-Found 5 episodes in runs/run_20250720T123202422603
-Base episodes found: 5
-   ContactsAddContact (ContactsAddContact)
-   CameraTakePhoto (CameraTakePhoto)
-   SystemBrightnessMax (SystemBrightnessMax)
-   FilesMoveFile (FilesMoveFile)
-   ClockTimerEntry (ClockTimerEntry)
-Created 10 episode variants from 5 base episodes
+###  Evaluation Episodes Summary
+
+- **Found**: 5 unique episodes in `runs/run_20250720T123202422603`
+
+####  Base Episodes:
+1. `ContactsAddContact`
+2. `CameraTakePhoto`
+3. `SystemBrightnessMax`
+4. `FilesMoveFile`
+5. `ClockTimerEntry`
+
+- ✅ Created **10 episode variants** from 5 base episodes (2 per task)
+
 
 Prompt variants to test:
    - Zero Shot
