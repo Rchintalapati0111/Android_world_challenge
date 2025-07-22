@@ -1,6 +1,6 @@
 # Evaluating LLM Agents in AndroidWorld
 
-This project explores the use of Large Language Models (LLMs) like GPT-4 for controlling Android UIs using natural language. We evaluate different prompting strategies on tasks from the AndroidWorld benchmark and analyze agent performance using step accuracy, success rate, and hallucination rate.
+This project explores the use of Large Language Models (LLMs) like GPT-4 for controlling Android UIs using natural language. Evaluated different prompting strategies on tasks from the AndroidWorld benchmark and analyzed agent performance using step accuracy, success rate, and hallucination rate.
 
 ##  Prompting Strategies
 - **Zero-Shot**: Only goal + UI context
