@@ -67,119 +67,376 @@ Running full episode…
  Part 2: Prompting & Evaluation Strategy
 
  (android_world_py310) renukachintalapati@Renukas-MacBook-Pro android_world % python scripts/second_part.py
- 
 IMPROVED Android Agent Evaluation Framework
 ============================================================
-Found 5 episodes to evaluate
+Found 4 episodes to evaluate
   - CameraTakePhoto_0.pkl.gz
-  - ClockTimerEntry_0.pkl.gz
   - ContactsAddContact_0.pkl.gz
   - FilesMoveFile_0.pkl.gz
   - SystemBrightnessMax_0.pkl.gz
 
 === Evaluating zero_shot ===
-Processing episode 1/5: CameraTakePhoto_0.pkl.gz
+Processing episode 1/4: CameraTakePhoto_0.pkl.gz
   Found 3 ground truth actions and 3 UI states
   Goal: Take one photo.
   Truth actions: ['OPEN_APP("Camera")', 'CLICK("element_2")', 'STATUS("complete")']
+    Fuzzy match: 'Shutter' → 'Shutter' (score: 100.0)
+    Fuzzy match: 'Shutter' → 'Shutter' (score: 100.0)
   Results: 0/3 correct, Success: False
-Processing episode 2/5: ClockTimerEntry_0.pkl.gz
-  Found 9 ground truth actions and 9 UI states
-  Goal: Create a timer with 0 hours, 16 minutes, and 35 seconds. Do not start the timer.
-  Truth actions: ['OPEN_APP("Clock")', 'CLICK("element_5")', 'CLICK("element_5")', 'CLICK("element_7")', 'CLICK("element_3")', 'CLICK("element_14")', 'CLICK("element_3")', 'CLICK("element_8")', 'STATUS("complete")']
-  Results: 1/9 correct, Success: False
-Processing episode 3/5: ContactsAddContact_0.pkl.gz
+Processing episode 2/4: ContactsAddContact_0.pkl.gz
   Found 8 ground truth actions and 8 UI states
   Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
   Truth actions: ['CLICK("element_2")', 'CLICK("element_6")', 'CLICK("element_1")', 'INPUT_TEXT("Hugo")', 'INPUT_TEXT("Pereira")', 'INPUT_TEXT("+13920741751")', 'CLICK("element_2")', 'STATUS("complete")']
+    Fuzzy match: 'Contacts' → 'Contacts' (score: 100.0)
+    Fuzzy match: 'Create new contact' → 'Create new contact' (score: 100.0)
+    Fuzzy match: 'Create contact' → 'Create contact' (score: 100.0)
+    Fuzzy match: 'Create contact' → 'Create contact' (score: 100.0)
+    Fuzzy match: 'Create contact' → 'Create contact' (score: 100.0)
+    Fuzzy match: 'Create new contact' → 'Create new contact' (score: 100.0)
   Results: 0/8 correct, Success: False
-Processing episode 4/5: FilesMoveFile_0.pkl.gz
+Processing episode 3/4: FilesMoveFile_0.pkl.gz
   Found 20 ground truth actions and 20 UI states
   Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
   Truth actions: ['OPEN_APP("Files")', 'CLICK("element_1")', 'CLICK("element_8")', 'CLICK("element_24")', 'SCROLL("down")', 'UNKNOWN_ACTION("long_press")', 'CLICK("element_4")', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'NAVIGATE_BACK()', 'CLICK("element_1")', 'CLICK("element_8")', 'CLICK("element_12")', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'STATUS("infeasible")']
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Fuzzy match: 'Files' → 'Files' (score: 100.0)
+    Fuzzy match: 'Podcasts' → 'Podcasts' (score: 100.0)
+    Fuzzy match: 'Podcasts' → 'Podcasts' (score: 100.0)
+    Fuzzy match: 'holiday_photos_ZYUM.jpg' → 'holiday_photos_ZYUM.jpg' (score: 100.0)
+    Fuzzy match: 'holiday_photos_ZYUM.jpg' → 'holiday_photos_ZYUM.jpg' (score: 100.0)
+    Fuzzy match: 'Move to…' → 'Move to…' (score: 100.0)
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Fuzzy match: 'holiday_photos_ZYUM.jpg' → 'holiday_photos_ZYUM.jpg' (score: 100.0)
+    Fuzzy match: 'Podcasts' → 'Podcasts' (score: 100.0)
+    Fuzzy match: 'Files' → 'Files' (score: 100.0)
+    Fuzzy match: 'Podcasts' → 'Podcasts' (score: 100.0)
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Fuzzy match: 'New window' → 'New window' (score: 100.0)
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Fuzzy match: 'New window' → 'New window' (score: 100.0)
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Fuzzy match: 'New window' → 'New window' (score: 100.0)
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
   Results: 0/20 correct, Success: False
-Processing episode 5/5: SystemBrightnessMax_0.pkl.gz
+Processing episode 4/4: SystemBrightnessMax_0.pkl.gz
   Found 10 ground truth actions and 10 UI states
   Goal: Turn brightness to the max value.
   Truth actions: ['OPEN_APP("Settings")', 'SCROLL("down")', 'CLICK("element_12")', 'SCROLL("down")', 'SCROLL("down")', 'SCROLL("down")', 'SCROLL("down")', 'CLICK("element_4")', 'CLICK("element_0")', 'CLICK("element_0")']
+    Hallucination: 'Display' not found in UI elements (best score: 44.4)
   Step 1: Hallucination detected - CLICK("Display")
+    Fuzzy match: 'Display' → 'Display' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness level' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness level' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness level' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness level' (score: 100.0)
+    Fuzzy match: 'Display brightness' → 'Display brightness' (score: 100.0)
+    Fuzzy match: 'Display brightness' → 'Display brightness' (score: 100.0)
   Results: 1/10 correct, Success: False
 
 === Evaluating few_shot_improved ===
-Processing episode 1/5: CameraTakePhoto_0.pkl.gz
+Processing episode 1/4: CameraTakePhoto_0.pkl.gz
   Found 3 ground truth actions and 3 UI states
   Goal: Take one photo.
   Truth actions: ['OPEN_APP("Camera")', 'CLICK("element_2")', 'STATUS("complete")']
+    Fuzzy match: 'Search' → 'Search' (score: 100.0)
+    Fuzzy match: 'Shutter' → 'Shutter' (score: 100.0)
+    Fuzzy match: 'Shutter' → 'Shutter' (score: 100.0)
   Results: 0/3 correct, Success: False
-Processing episode 2/5: ClockTimerEntry_0.pkl.gz
-  Found 9 ground truth actions and 9 UI states
-  Goal: Create a timer with 0 hours, 16 minutes, and 35 seconds. Do not start the timer.
-  Truth actions: ['OPEN_APP("Clock")', 'CLICK("element_5")', 'CLICK("element_5")', 'CLICK("element_7")', 'CLICK("element_3")', 'CLICK("element_14")', 'CLICK("element_3")', 'CLICK("element_8")', 'STATUS("complete")']
-  Results: 0/9 correct, Success: False
-Processing episode 3/5: ContactsAddContact_0.pkl.gz
+Processing episode 2/4: ContactsAddContact_0.pkl.gz
   Found 8 ground truth actions and 8 UI states
   Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
   Truth actions: ['CLICK("element_2")', 'CLICK("element_6")', 'CLICK("element_1")', 'INPUT_TEXT("Hugo")', 'INPUT_TEXT("Pereira")', 'INPUT_TEXT("+13920741751")', 'CLICK("element_2")', 'STATUS("complete")']
+    Fuzzy match: 'Contacts' → 'Contacts' (score: 100.0)
+    Fuzzy match: 'Create new contact' → 'Create new contact' (score: 100.0)
+    Fuzzy match: 'Save' → 'Save' (score: 100.0)
+  Step 7: Parse error - 
   Results: 0/8 correct, Success: False
-Processing episode 4/5: FilesMoveFile_0.pkl.gz
+Processing episode 3/4: FilesMoveFile_0.pkl.gz
   Found 20 ground truth actions and 20 UI states
   Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
   Truth actions: ['OPEN_APP("Files")', 'CLICK("element_1")', 'CLICK("element_8")', 'CLICK("element_24")', 'SCROLL("down")', 'UNKNOWN_ACTION("long_press")', 'CLICK("element_4")', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'NAVIGATE_BACK()', 'CLICK("element_1")', 'CLICK("element_8")', 'CLICK("element_12")', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'STATUS("infeasible")']
+    Fuzzy match: 'Search' → 'Search' (score: 100.0)
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Fuzzy match: 'sdk_gphone64_arm64' → 'sdk_gphone64_arm64' (score: 100.0)
+    Fuzzy match: 'Podcasts' → 'Podcasts' (score: 100.0)
+    Fuzzy match: 'holiday_photos_ZYUM.jpg' → 'holiday_photos_ZYUM.jpg' (score: 100.0)
+    Fuzzy match: 'More options' → 'More options' (score: 100.0)
+    Fuzzy match: 'Move to…' → 'Move to…' (score: 100.0)
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Hallucination: 'sdk_gphone_x86_64' not found in UI elements (best score: 37.5)
+  Step 9: Hallucination detected - CLICK("sdk_gphone_x86_64")
+    Fuzzy match: 'DCIM' → 'DCIM' (score: 100.0)
+    Hallucination: 'Move here' not found in UI elements (best score: 44.4)
   Step 11: Hallucination detected - CLICK("Move here")
   Results: 0/20 correct, Success: False
-Processing episode 5/5: SystemBrightnessMax_0.pkl.gz
+Processing episode 4/4: SystemBrightnessMax_0.pkl.gz
   Found 10 ground truth actions and 10 UI states
   Goal: Turn brightness to the max value.
   Truth actions: ['OPEN_APP("Settings")', 'SCROLL("down")', 'CLICK("element_12")', 'SCROLL("down")', 'SCROLL("down")', 'SCROLL("down")', 'SCROLL("down")', 'CLICK("element_4")', 'CLICK("element_0")', 'CLICK("element_0")']
+    Fuzzy match: 'Display' → 'Display' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness level' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness level' (score: 100.0)
+    Fuzzy match: 'Display brightness' → 'Display brightness' (score: 100.0)
   Results: 0/10 correct, Success: False
 
 === Evaluating self_reflect ===
-Processing episode 1/5: CameraTakePhoto_0.pkl.gz
+Processing episode 1/4: CameraTakePhoto_0.pkl.gz
   Found 3 ground truth actions and 3 UI states
   Goal: Take one photo.
   Truth actions: ['OPEN_APP("Camera")', 'CLICK("element_2")', 'STATUS("complete")']
+    Fuzzy match: 'Shutter' → 'Shutter' (score: 100.0)
   Results: 1/3 correct, Success: True
-Processing episode 2/5: ClockTimerEntry_0.pkl.gz
-  Found 9 ground truth actions and 9 UI states
-  Goal: Create a timer with 0 hours, 16 minutes, and 35 seconds. Do not start the timer.
-  Truth actions: ['OPEN_APP("Clock")', 'CLICK("element_5")', 'CLICK("element_5")', 'CLICK("element_7")', 'CLICK("element_3")', 'CLICK("element_14")', 'CLICK("element_3")', 'CLICK("element_8")', 'STATUS("complete")']
-  Results: 1/9 correct, Success: False
-Processing episode 3/5: ContactsAddContact_0.pkl.gz
+Processing episode 2/4: ContactsAddContact_0.pkl.gz
   Found 8 ground truth actions and 8 UI states
   Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
   Truth actions: ['CLICK("element_2")', 'CLICK("element_6")', 'CLICK("element_1")', 'INPUT_TEXT("Hugo")', 'INPUT_TEXT("Pereira")', 'INPUT_TEXT("+13920741751")', 'CLICK("element_2")', 'STATUS("complete")']
+    Fuzzy match: 'Contacts' → 'Contacts' (score: 100.0)
+    Fuzzy match: 'Create new contact' → 'Create new contact' (score: 100.0)
+    Fuzzy match: 'Phone' → 'Phone' (score: 100.0)
   Results: 1/8 correct, Success: True
-Processing episode 4/5: FilesMoveFile_0.pkl.gz
+Processing episode 3/4: FilesMoveFile_0.pkl.gz
   Found 20 ground truth actions and 20 UI states
   Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
   Truth actions: ['OPEN_APP("Files")', 'CLICK("element_1")', 'CLICK("element_8")', 'CLICK("element_24")', 'SCROLL("down")', 'UNKNOWN_ACTION("long_press")', 'CLICK("element_4")', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'NAVIGATE_BACK()', 'CLICK("element_1")', 'CLICK("element_8")', 'CLICK("element_12")', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'CLICK("element_4")', 'NAVIGATE_BACK()', 'STATUS("infeasible")']
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Fuzzy match: 'Podcasts' → 'Podcasts' (score: 100.0)
+    Fuzzy match: 'holiday_photos_ZYUM.jpg' → 'holiday_photos_ZYUM.jpg' (score: 100.0)
+    Fuzzy match: 'More options' → 'More options' (score: 100.0)
+    Fuzzy match: 'Move to…' → 'Move to…' (score: 100.0)
+    Fuzzy match: 'Show roots' → 'Show roots' (score: 100.0)
+    Fuzzy match: 'DCIM' → 'DCIM' (score: 100.0)
+    Fuzzy match: 'com.google.android.documentsui:id/container_save' → 'com.google.android.documentsui:id/container_save' (score: 100.0)
+    Fuzzy match: 'com.google.android.documentsui:id/container_save' → 'com.google.android.documentsui:id/container_save' (score: 100.0)
+    Fuzzy match: 'com.google.android.documentsui:id/container_save' → 'com.google.android.documentsui:id/container_save' (score: 100.0)
+    Fuzzy match: 'com.google.android.documentsui:id/container_save' → 'com.google.android.documentsui:id/container_save' (score: 100.0)
   Results: 2/20 correct, Success: True
-Processing episode 5/5: SystemBrightnessMax_0.pkl.gz
+Processing episode 4/4: SystemBrightnessMax_0.pkl.gz
   Found 10 ground truth actions and 10 UI states
   Goal: Turn brightness to the max value.
   Truth actions: ['OPEN_APP("Settings")', 'SCROLL("down")', 'CLICK("element_12")', 'SCROLL("down")', 'SCROLL("down")', 'SCROLL("down")', 'SCROLL("down")', 'CLICK("element_4")', 'CLICK("element_0")', 'CLICK("element_0")']
+    Fuzzy match: 'Display' → 'Display' (score: 100.0)
+    Fuzzy match: 'Brightness' → 'Brightness' (score: 100.0)
+    Fuzzy match: 'Brightness level' → 'Brightness level' (score: 100.0)
   Results: 2/10 correct, Success: True
 
 === SUMMARY STATISTICS ===
-Results saved to: improved_evaluation_results.csv
 
 ZERO_SHOT:
-  Average Step Accuracy: 0.042
+  Average Step Accuracy: 0.025
   Episode Success Rate: 0.000
-  Hallucination Rate: 0.020
+  Hallucination Rate: 0.025
   Parse Error Rate: 0.000
 
 FEW_SHOT_IMPROVED:
   Average Step Accuracy: 0.000
   Episode Success Rate: 0.000
-  Hallucination Rate: 0.010
-  Parse Error Rate: 0.000
+  Hallucination Rate: 0.025
+  Parse Error Rate: 0.031
 
 SELF_REFLECT:
-  Average Step Accuracy: 0.174
-  Episode Success Rate: 0.800
+  Average Step Accuracy: 0.190
+  Episode Success Rate: 1.000
   Hallucination Rate: 0.000
   Parse Error Rate: 0.000
+
+=== PER-EPISODE BREAKDOWN ===
+
+Episode: CameraTakePhoto_0.pkl.gz (zero_shot)
+  Step Accuracy: 0.000
+  Episode Success: False
+  Steps: 0/3
+  Step-by-step:
+    1: ✗ Pred: OPEN_APP("Photos")... | Truth: OPEN_APP("Camera")...
+    2: ✗ Pred: CLICK("Shutter")... | Truth: CLICK("element_2")...
+    3: ✗ Pred: CLICK("Shutter")... | Truth: STATUS("complete")...
+
+Episode: ContactsAddContact_0.pkl.gz (zero_shot)
+  Step Accuracy: 0.000
+  Episode Success: False
+  Steps: 0/8
+  Step-by-step:
+    1: ✗ Pred: OPEN_APP("Phone")... | Truth: CLICK("element_2")...
+    2: ✗ Pred: CLICK("Contacts")... | Truth: CLICK("element_6")...
+    3: ✗ Pred: CLICK("Create new contact")... | Truth: CLICK("element_1")...
+    4: ✗ Pred: CLICK("Create contact")... | Truth: INPUT_TEXT("Hugo")...
+    5: ✗ Pred: CLICK("Create contact")... | Truth: INPUT_TEXT("Pereira")...
+    6: ✗ Pred: INPUT_TEXT("Hugo")... | Truth: INPUT_TEXT("+13920741751")...
+    7: ✗ Pred: CLICK("Create contact")... | Truth: CLICK("element_2")...
+    8: ✗ Pred: CLICK("Create new contact")... | Truth: STATUS("complete")...
+
+Episode: FilesMoveFile_0.pkl.gz (zero_shot)
+  Step Accuracy: 0.000
+  Episode Success: False
+  Steps: 0/20
+  Step-by-step:
+    1: ✗ Pred: OPEN_APP("Photos")... | Truth: OPEN_APP("Files")...
+    2: ✗ Pred: CLICK("Show roots")... | Truth: CLICK("element_1")...
+    3: ✗ Pred: CLICK("Files")... | Truth: CLICK("element_8")...
+    4: ✗ Pred: CLICK("Podcasts")... | Truth: CLICK("element_24")...
+    5: ✗ Pred: CLICK("Podcasts")... | Truth: SCROLL("down")...
+    6: ✗ Pred: CLICK("holiday_photos_ZYUM.jpg")... | Truth: UNKNOWN_ACTION("long_press")...
+    7: ✗ Pred: CLICK("holiday_photos_ZYUM.jpg")... | Truth: CLICK("element_4")...
+    8: ✗ Pred: CLICK("Move to…")... | Truth: CLICK("element_4")...
+    9: ✗ Pred: CLICK("Show roots")... | Truth: NAVIGATE_BACK()...
+    10: ✗ Pred: CLICK("holiday_photos_ZYUM.jpg")... | Truth: NAVIGATE_BACK()...
+    11: ✗ Pred: CLICK("Podcasts")... | Truth: CLICK("element_1")...
+    12: ✗ Pred: CLICK("Files")... | Truth: CLICK("element_8")...
+    13: ✗ Pred: CLICK("Podcasts")... | Truth: CLICK("element_12")...
+    14: ✗ Pred: CLICK("Show roots")... | Truth: CLICK("element_4")...
+    15: ✗ Pred: CLICK("New window")... | Truth: NAVIGATE_BACK()...
+    16: ✗ Pred: CLICK("Show roots")... | Truth: CLICK("element_4")...
+    17: ✗ Pred: CLICK("New window")... | Truth: NAVIGATE_BACK()...
+    18: ✗ Pred: CLICK("Show roots")... | Truth: CLICK("element_4")...
+    19: ✗ Pred: CLICK("New window")... | Truth: NAVIGATE_BACK()...
+    20: ✗ Pred: CLICK("Show roots")... | Truth: STATUS("infeasible")...
+
+Episode: SystemBrightnessMax_0.pkl.gz (zero_shot)
+  Step Accuracy: 0.100
+  Episode Success: False
+  Steps: 1/10
+  Step-by-step:
+    1: ✓ Pred: OPEN_APP("Settings")... | Truth: OPEN_APP("Settings")...
+    2: ✗ Pred: CLICK("Display")... | Truth: SCROLL("down")...
+    3: ✗ Pred: CLICK("Display")... | Truth: CLICK("element_12")...
+    4: ✗ Pred: CLICK("Brightness level")... | Truth: SCROLL("down")...
+    5: ✗ Pred: CLICK("Brightness level")... | Truth: SCROLL("down")...
+    6: ✗ Pred: CLICK("Brightness level")... | Truth: SCROLL("down")...
+    7: ✗ Pred: CLICK("Brightness level")... | Truth: SCROLL("down")...
+    8: ✗ Pred: CLICK("Brightness level")... | Truth: CLICK("element_4")...
+    9: ✗ Pred: CLICK("Display brightness")... | Truth: CLICK("element_0")...
+    10: ✗ Pred: CLICK("Display brightness")... | Truth: CLICK("element_0")...
+
+Episode: CameraTakePhoto_0.pkl.gz (few_shot_improved)
+  Step Accuracy: 0.000
+  Episode Success: False
+  Steps: 0/3
+  Step-by-step:
+    1: ✗ Pred: CLICK("Search")... | Truth: OPEN_APP("Camera")...
+    2: ✗ Pred: CLICK("Shutter")... | Truth: CLICK("element_2")...
+    3: ✗ Pred: CLICK("Shutter")... | Truth: STATUS("complete")...
+
+Episode: ContactsAddContact_0.pkl.gz (few_shot_improved)
+  Step Accuracy: 0.000
+  Episode Success: False
+  Steps: 0/8
+  Step-by-step:
+    1: ✗ Pred: OPEN_APP("Phone")... | Truth: CLICK("element_2")...
+    2: ✗ Pred: CLICK("Contacts")... | Truth: CLICK("element_6")...
+    3: ✗ Pred: CLICK("Create new contact")... | Truth: CLICK("element_1")...
+    4: ✗ Pred: INPUT_TEXT("First name", "Hugo")... | Truth: INPUT_TEXT("Hugo")...
+    5: ✗ Pred: INPUT_TEXT("Last name", "Pereira")... | Truth: INPUT_TEXT("Pereira")...
+    6: ✗ Pred: INPUT_TEXT("Phone", "+13920741751")... | Truth: INPUT_TEXT("+13920741751")...
+    7: ✗ Pred: CLICK("Save")... | Truth: CLICK("element_2")...
+    8: ✗ Pred: ... | Truth: STATUS("complete")...
+
+Episode: FilesMoveFile_0.pkl.gz (few_shot_improved)
+  Step Accuracy: 0.000
+  Episode Success: False
+  Steps: 0/20
+  Step-by-step:
+    1: ✗ Pred: CLICK("Search")... | Truth: OPEN_APP("Files")...
+    2: ✗ Pred: CLICK("Show roots")... | Truth: CLICK("element_1")...
+    3: ✗ Pred: CLICK("sdk_gphone64_arm64")... | Truth: CLICK("element_8")...
+    4: ✗ Pred: CLICK("Podcasts")... | Truth: CLICK("element_24")...
+    5: ✗ Pred: INPUT_TEXT("holiday_photos.jpg")... | Truth: SCROLL("down")...
+    6: ✗ Pred: CLICK("holiday_photos_ZYUM.jpg")... | Truth: UNKNOWN_ACTION("long_press")...
+    7: ✗ Pred: CLICK("More options")... | Truth: CLICK("element_4")...
+    8: ✗ Pred: CLICK("Move to…")... | Truth: CLICK("element_4")...
+    9: ✗ Pred: CLICK("Show roots")... | Truth: NAVIGATE_BACK()...
+    10: ✗ Pred: CLICK("sdk_gphone_x86_64")... | Truth: NAVIGATE_BACK()...
+    11: ✗ Pred: CLICK("DCIM")... | Truth: CLICK("element_1")...
+    12: ✗ Pred: CLICK("Move here")... | Truth: CLICK("element_8")...
+    13: ✗ Pred: NONE... | Truth: CLICK("element_12")...
+    14: ✗ Pred: NONE... | Truth: CLICK("element_4")...
+    15: ✗ Pred: NONE... | Truth: NAVIGATE_BACK()...
+    16: ✗ Pred: NONE... | Truth: CLICK("element_4")...
+    17: ✗ Pred: NONE... | Truth: NAVIGATE_BACK()...
+    18: ✗ Pred: NONE... | Truth: CLICK("element_4")...
+    19: ✗ Pred: NONE... | Truth: NAVIGATE_BACK()...
+    20: ✗ Pred: NONE... | Truth: STATUS("infeasible")...
+
+Episode: SystemBrightnessMax_0.pkl.gz (few_shot_improved)
+  Step Accuracy: 0.000
+  Episode Success: False
+  Steps: 0/10
+  Step-by-step:
+    1: ✗ Pred: INPUT_TEXT("Settings")... | Truth: OPEN_APP("Settings")...
+    2: ✗ Pred: INPUT_TEXT("Display")... | Truth: SCROLL("down")...
+    3: ✗ Pred: CLICK("Display")... | Truth: CLICK("element_12")...
+    4: ✗ Pred: CLICK("Brightness level")... | Truth: SCROLL("down")...
+    5: ✗ Pred: INPUT_TEXT("100%")... | Truth: SCROLL("down")...
+    6: ✗ Pred: CLICK("Brightness level")... | Truth: SCROLL("down")...
+    7: ✗ Pred: INPUT_TEXT("100%")... | Truth: SCROLL("down")...
+    8: ✗ Pred: CLICK("Brightness level")... | Truth: CLICK("element_4")...
+    9: ✗ Pred: CLICK("Display brightness")... | Truth: CLICK("element_0")...
+    10: ✗ Pred: NO_ACTION_REQUIRED... | Truth: CLICK("element_0")...
+
+Episode: CameraTakePhoto_0.pkl.gz (self_reflect)
+  Step Accuracy: 0.333
+  Episode Success: True
+  Steps: 1/3
+  Step-by-step:
+    1: ✗ Pred: SCROLL("up")... | Truth: OPEN_APP("Camera")...
+    2: ✗ Pred: CLICK("Shutter")... | Truth: CLICK("element_2")...
+    3: ✓ Pred: STATUS("complete")... | Truth: STATUS("complete")...
+
+Episode: ContactsAddContact_0.pkl.gz (self_reflect)
+  Step Accuracy: 0.125
+  Episode Success: True
+  Steps: 1/8
+  Step-by-step:
+    1: ✗ Pred: OPEN_APP("Phone")... | Truth: CLICK("element_2")...
+    2: ✗ Pred: CLICK("Contacts")... | Truth: CLICK("element_6")...
+    3: ✗ Pred: CLICK("Create new contact")... | Truth: CLICK("element_1")...
+    4: ✗ Pred: INPUT_TEXT("Hugo", "First name")... | Truth: INPUT_TEXT("Hugo")...
+    5: ✗ Pred: INPUT_TEXT("Pereira", "Last name")... | Truth: INPUT_TEXT("Pereira")...
+    6: ✗ Pred: CLICK("Phone")... | Truth: INPUT_TEXT("+13920741751")...
+    7: ✗ Pred: INPUT_TEXT("+13920741751", "Mobile Phone")... | Truth: CLICK("element_2")...
+    8: ✓ Pred: STATUS("complete")... | Truth: STATUS("complete")...
+
+Episode: FilesMoveFile_0.pkl.gz (self_reflect)
+  Step Accuracy: 0.100
+  Episode Success: True
+  Steps: 2/20
+  Step-by-step:
+    1: ✓ Pred: OPEN_APP("Files")... | Truth: OPEN_APP("Files")...
+    2: ✗ Pred: CLICK("Show roots")... | Truth: CLICK("element_1")...
+    3: ✗ Pred: SCROLL("down")... | Truth: CLICK("element_8")...
+    4: ✗ Pred: CLICK("Podcasts")... | Truth: CLICK("element_24")...
+    5: ✓ Pred: SCROLL("down")... | Truth: SCROLL("down")...
+    6: ✗ Pred: CLICK("holiday_photos_ZYUM.jpg")... | Truth: UNKNOWN_ACTION("long_press")...
+    7: ✗ Pred: CLICK("More options")... | Truth: CLICK("element_4")...
+    8: ✗ Pred: CLICK("Move to…")... | Truth: CLICK("element_4")...
+    9: ✗ Pred: SCROLL("down")... | Truth: NAVIGATE_BACK()...
+    10: ✗ Pred: CLICK("Show roots")... | Truth: NAVIGATE_BACK()...
+    11: ✗ Pred: CLICK("DCIM")... | Truth: CLICK("element_1")...
+    12: ✗ Pred: STATUS("complete")... | Truth: CLICK("element_8")...
+    13: ✗ Pred: CLICK("com.google.android.documentsui:id/container... | Truth: CLICK("element_12")...
+    14: ✗ Pred: CLICK("com.google.android.documentsui:id/container... | Truth: CLICK("element_4")...
+    15: ✗ Pred: STATUS("complete")... | Truth: NAVIGATE_BACK()...
+    16: ✗ Pred: CLICK("com.google.android.documentsui:id/container... | Truth: CLICK("element_4")...
+    17: ✗ Pred: STATUS("complete")... | Truth: NAVIGATE_BACK()...
+    18: ✗ Pred: STATUS("complete")... | Truth: CLICK("element_4")...
+    19: ✗ Pred: STATUS("complete")... | Truth: NAVIGATE_BACK()...
+    20: ✗ Pred: CLICK("com.google.android.documentsui:id/container... | Truth: STATUS("infeasible")...
+
+Episode: SystemBrightnessMax_0.pkl.gz (self_reflect)
+  Step Accuracy: 0.200
+  Episode Success: True
+  Steps: 2/10
+  Step-by-step:
+    1: ✓ Pred: OPEN_APP("Settings")... | Truth: OPEN_APP("Settings")...
+    2: ✓ Pred: SCROLL("down")... | Truth: SCROLL("down")...
+    3: ✗ Pred: CLICK("Display")... | Truth: CLICK("element_12")...
+    4: ✗ Pred: CLICK("Brightness")... | Truth: SCROLL("down")...
+    5: ✗ Pred: CLICK("Brightness level")... | Truth: SCROLL("down")...
+    6: ✗ Pred: INPUT_TEXT("100%")... | Truth: SCROLL("down")...
+    7: ✗ Pred: STATUS("complete")... | Truth: SCROLL("down")...
+    8: ✗ Pred: STATUS("complete")... | Truth: CLICK("element_4")...
+    9: ✗ Pred: STATUS("complete")... | Truth: CLICK("element_0")...
+    10: ✗ Pred: STATUS("complete")... | Truth: CLICK("element_0")...
 
 
 Part 3: Benchmarking & Report
