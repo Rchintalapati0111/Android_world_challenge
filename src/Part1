@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+import gzip
+import pickle
+import argparse
+import openai
+from typing import List
+
+DEFAULT_MODEL          = "gpt-4"
+DEFAULT_PROMPT_TEMPLATE = """\
+Goal: {goal}
+
+Observation:
+{obs}
+
+What is the next best action? 
+Respond exactly in the format: CLICK("<element>") or OPEN_APP("<app>") or STATUS("complete")
+"""
+
+def load_episode(path: str) -> dict:
+    """Un-gzip + unpickle and unwrap the single-record list."""
+    with gzip.open(path, "rb") as f:
+        records = pickle.load(f)
+    return records[0]
+
+def summarize_ui_tree(ui_list: List) -> str:
+    """Turn a list of UIElement objects into a bullet list of labels."""
+    bullets = []
+    for el in ui_list:
+        label = el.content_description or el.text or el.resource_name or "<unknown>"
+        bullets.append(f"- {label}")
+    return "\n".join(bullets)
+
+def make_prompt(template: str, goal: str, obs: str) -> str:
+    return template.format(goal=goal, obs=obs)
+
+def query_llm(api_key: str, model: str, prompt: str) -> str:
+    openai.api_key = api_key
+    resp = openai.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0,
+    )
+    return resp.choices[0].message.content.strip()
+
+def main():
+    p = argparse.ArgumentParser(description="Minimal AndroidWorld LLM agent scaffold")
+    p.add_argument("--episode",   required=True,  help="Path to the .pkl.gz episode")
+    p.add_argument("--api_key",   required=True,  help="OpenAI API key")
+    p.add_argument("--model",     default=DEFAULT_MODEL, help="LLM model name")
+    p.add_argument("--template",  default=DEFAULT_PROMPT_TEMPLATE,
+                   help="Prompt template with {goal} and {obs}")
+    args = p.parse_args()
+
+    # 1. Load: 
+
+    record = load_episode(args.episode)
+    goal   = record["goal"]
+    ui_trees = record["episode_data"]["before_element_list"]
+    n_steps  = len(ui_trees)
+
+    # 2. Show goal + first observation: 
+
+    print("\nGoal:\n ", goal)
+    print(f"\nStep 1/{n_steps} observation:")
+    first_obs = summarize_ui_tree(ui_trees[0])
+    print(first_obs)
+
+    # 3. Ask LLM for the very next action: 
+    
+    prompt = make_prompt(args.template, goal, first_obs)
+    print("\nPrompt sent to LLM:\n", prompt, "\n")
+    action = query_llm(args.api_key, args.model, prompt)
+    print("LLM Action →", action, "\n")
+
+    # 4. Run through the entire episode: 
+
+    print("Running full episode…")
+    actions = []
+    for i, ui in enumerate(ui_trees):
+        obs_summary = summarize_ui_tree(ui)
+        prompt = make_prompt(args.template, goal, obs_summary)
+        act    = query_llm(args.api_key, args.model, prompt)
+        print(f" Step {i+1:02d}/{n_steps:02d}: {act}")
+        actions.append(act)
+        if 'STATUS("complete")' in act:
+            break
+
+    # 5. Done: 
+        
+    print("\n Collected actions:", actions)
+
+if __name__ == "__main__":
+    main()
