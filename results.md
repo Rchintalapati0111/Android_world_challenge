@@ -1052,34 +1052,41 @@ DATASET OVERVIEW
 | High Hallucination Episodes (>10%) | 4 / 30 (13.34%)        |
 
 
-WHERE LLMs FAIL:
-   • Complex Navigation: Multi-step file operations, deep UI traversal
-   • UI Element Mapping: Confusion between semantic names and element indices
-   • State Tracking: Losing context across multiple app transitions
-   • Goal Decomposition: Misunderstanding multi-part objectives
+###  Where LLMs Fail
 
-WHY LLMs FAIL:
-   • Format Mismatch: Model outputs semantic names, truth uses indices
-   • Limited Memory: Cannot track UI state changes effectively
-   • Hallucination Tendency: Invents plausible but non-existent UI elements
-   • Context Integration: Struggles to combine goal + history + current UI
+- **Complex Navigation**: Multi-step file operations, deep UI traversal  
+- **UI Element Mapping**: Confusion between semantic names and element indices  
+- **State Tracking**: Losing context across multiple app transitions  
+- **Goal Decomposition**: Misunderstanding multi-part objectives  
 
-4. INTERESTING BEHAVIORS DETECTED
-------------------------------------------------------------
+###  Why LLMs Fail
 
-HALLUCINATED ACTIONS (7 evaluations):
-   • Context Menus: 'Paste', 'Move here', 'Copy' buttons
-   • Standard Controls: 'Save', 'Cancel', 'OK' buttons
-   • Semantic Names: 'Camera' instead of 'element_2'
-   • Root Cause: Model generates plausible UI based on task context
+- **Format Mismatch**: Model outputs semantic names, truth uses indices  
+- **Limited Memory**: Cannot track UI state changes effectively  
+- **Hallucination Tendency**: Invents plausible but non-existent UI elements  
+- **Context Integration**: Struggles to combine goal + history + current UI  
 
-GOAL MISINTERPRETATION (8 evaluations):
-   • Wrong App Opening: Settings instead of Camera
-   • Partial Goal Focus: Completing only part of multi-step tasks
-   • Action Sequence Errors: Correct goal, wrong approach
+---
 
-UI REASONING LIMITATIONS (16 complex tasks failed):
-   • Element Indexing: Confusion between 'element_X' and descriptions
-   • Spatial Understanding: Limited grasp of UI layout and hierarchy
-   • Dynamic UI: Struggles when interface changes between steps
-   • Multi-Modal Gap: Text-only understanding of visual interfaces
+###  Interesting Behaviors Detected
+
+#### Hallucinated Actions 
+
+- **Context Menus**: 'Paste', 'Move here', 'Copy' buttons  
+- **Standard Controls**: 'Save', 'Cancel', 'OK' buttons  
+- **Semantic Names**: 'Camera' instead of 'element_2'  
+- **Root Cause**: Model generates plausible UI based on task context  
+
+#### Goal Misinterpretation 
+
+- **Wrong App Opening**: Settings instead of Camera  
+- **Partial Goal Focus**: Completing only part of multi-step tasks  
+- **Action Sequence Errors**: Correct goal, wrong approach  
+
+#### UI Reasoning Limitations 
+
+- **Element Indexing**: Confusion between 'element_X' and descriptions  
+- **Spatial Understanding**: Limited grasp of UI layout and hierarchy  
+- **Dynamic UI**: Struggles when interface changes between steps  
+- **Multi-Modal Gap**: Text-only understanding of visual interfaces  
+
