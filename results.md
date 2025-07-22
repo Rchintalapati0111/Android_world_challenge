@@ -1033,35 +1033,14 @@ DATASET OVERVIEW
 2. TASK-SPECIFIC PERFORMANCE
 ------------------------------------------------------------
 
-CAMERATAKEPHOTO:
-   Episodes: 6 | Avg Steps: 3.0
-   Step Accuracy: 0.444 (44.4%)
-   Success Rate: 0.667 (66.7%)
-   Difficulty: EASY
+| Task Name             | Episodes | Avg Steps | Step Accuracy    | Success Rate     | Difficulty  |
+|-----------------------|----------|-----------|------------------|------------------|-------------|
+| CameraTakePhoto       | 6        | 3.0       | 0.444 (44.4%)    | 0.667 (66.7%)    | EASY        |
+| ClockTimerEntry       | 6        | 9.0       | 0.111 (11.1%)    | 0.000 (0.0%)     | HARD        |
+| ContactsAddContact    | 6        | 8.0       | 0.208 (20.8%)    | 0.667 (66.7%)    | MEDIUM      |
+| FilesMoveFile         | 6        | 20.0      | 0.033 (3.3%)     | 0.000 (0.0%)     | VERY HARD   |
+| SystemBrightnessMax   | 6        | 10.0      | 0.117 (11.7%)    | 0.000 (0.0%)     | HARD        |
 
-CLOCKTIMERENTRY:
-   Episodes: 6 | Avg Steps: 9.0
-   Step Accuracy: 0.111 (11.1%)
-   Success Rate: 0.000 (0.0%)
-   Difficulty: HARD
-
-CONTACTSADDCONTACT:
-   Episodes: 6 | Avg Steps: 8.0
-   Step Accuracy: 0.208 (20.8%)
-   Success Rate: 0.667 (66.7%)
-   Difficulty: MEDIUM
-
-FILESMOVEFILE:
-   Episodes: 6 | Avg Steps: 20.0
-   Step Accuracy: 0.033 (3.3%)
-   Success Rate: 0.000 (0.0%)
-   Difficulty: VERY HARD
-
-SYSTEMBRIGHTNESSMAX:
-   Episodes: 6 | Avg Steps: 10.0
-   Step Accuracy: 0.117 (11.7%)
-   Success Rate: 0.000 (0.0%)
-   Difficulty: HARD
 
 3. FAILURE ANALYSIS: WHERE & WHY LLMs GO WRONG
 ------------------------------------------------------------
