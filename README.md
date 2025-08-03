@@ -1,5 +1,3 @@
-# Evaluating LLM Agents in AndroidWorld
-
 # Android World LLM Agent Evaluation
 
 Lightweight framework for evaluating LLMs (OpenAI GPT-4, Anthropic Claude, Mistral) as agents navigating Android UI tasks using the `android_world` benchmark. Supports multi-strategy prompting (zero-shot, few-shot, self-reflection), memory-enhanced name-index reasoning, structured function calling, and temperature variants.
