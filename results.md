@@ -6,7 +6,7 @@
 
 ## 1. Approach to Prompting and Evaluation
 
-We evaluated a multi-model Android agent under three prompting strategies: **Zero-shot**, **Few-shot**, and **Self-reflection**, combined with RL-enhanced memory (name-index and element mappings) and temperature variants (Deterministic vs Balanced). Models tested were OpenAI, Anthropic (Claude), and Mistral. Each base episode was expanded by temperature variants to form a comprehensive set of 90 evaluations (5 base episodes × 2 temperatures × 3 strategies × 3 models). :contentReference[oaicite:23]{index=23}
+I evaluated a multi-model Android agent under three prompting strategies: **Zero-shot**, **Few-shot**, and **Self-reflection**, combined with RL-enhanced memory (name-index and element mappings) and temperature variants (Deterministic vs Balanced). Models tested were OpenAI, Anthropic (Claude), and Mistral. Each base episode was expanded by temperature variants to form a comprehensive set of 90 evaluations (5 base episodes × 2 temperatures × 3 strategies × 3 models). :contentReference[oaicite:23]{index=23}
 
 **Prompting strategies:**
 - **Zero-shot:** Direct instructions without examples.
