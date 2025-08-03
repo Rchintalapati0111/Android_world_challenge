@@ -28,36 +28,48 @@ Learning progression was tracked by comparing early vs. later episodes to detect
 ## 2. Summary of Performance Metrics
 
 ### Overall Results (Comprehensive Benchmark)
-- **Total Evaluations:** 90  
-- **Average Step Accuracy:** 29.5%  
-- **Average Name-Index Accuracy:** 76.5%  
-- **Episode Success Rate:** 36.7%  
-- **Hallucination Rate:** 1.1%  
-- **Average RL Reward:** 16.9  
-- **Learning Detected:** Yes (early avg reward 16.1 → late 17.7, +1.6 improvement) 
+
+| Metric                     | Value                                                            |
+|---------------------------|------------------------------------------------------------------|
+| Total Evaluations         | 90                                                               |
+| Average Step Accuracy     | 29.5%                                                            |
+| Average Name-Index Accuracy | 76.5%                                                          |
+| Episode Success Rate      | 36.7%                                                            |
+| Hallucination Rate        | 1.1%                                                             |
+| Average RL Reward         | 16.9                                                             |
+| Learning Detected         | Yes (early avg reward 16.1 → late 17.7, **+1.6** improvement)    |
+
 
 ### Model Ranking (Aggregated across strategies)
-1. **Claude (Anthropic):** Step accuracy 0.394, name-index 0.791  
-2. **Mistral:** Step accuracy 0.264, name-index 0.828  
-3. **OpenAI:** Step accuracy 0.226, name-index 0.675 
+| Rank | Model (Provider)      | Step Accuracy | Name-Index Accuracy |
+|------|----------------------|---------------|---------------------|
+| 1    | Claude (Anthropic)   | 39.4%         | 79.1%               |
+| 2    | Mistral              | 26.4%         | 82.8%               |
+| 3    | OpenAI               | 22.6%         | 67.5%               |
 
 ### Strategy Ranking
-1. **Few-shot:** Step 0.336, name-index 0.777  
-2. **Self-reflection:** Step 0.282, name-index 0.733  
-3. **Zero-shot:** Step 0.266, name-index 0.784 
+| Rank | Strategy         | Step Accuracy | Name-Index Accuracy |
+|------|------------------|---------------|---------------------|
+| 1    | Few-shot         | 33.6%         | 77.7%               |
+| 2    | Self-reflection  | 28.2%         | 73.3%               |
+| 3    | Zero-shot        | 26.6%         | 78.4%               |
 
 *(Note: In a separate aggregated view, SELF_REFLECTION was also highlighted as best in some contexts for robustness and lowest hallucination.)* 
 
 ### Temperature Variant Analysis
-- **Balanced (T=0.5):** Step accuracy 0.306, name-index 0.766, success 33.3%, hallucination 0.7%  
-- **Deterministic:** Step accuracy 0.283, name-index 0.764, success 40.0%, hallucination 1.5% 
+| Variant         | Step Accuracy | Name-Index Accuracy | Episode Success Rate | Hallucination Rate |
+|-----------------|---------------|---------------------|----------------------|--------------------|
+| Balanced (T=0.5)| 30.6%         | 76.6%               | 33.3%                | 0.7%               |
+| Deterministic (T=0.0) | 28.3%  | 76.4%               | 40.0%                | 1.5%               |
 
 ### Failure Breakdown
-- **Hallucinations:** 12  
-- **Misinterpretations:** 378  
-- **Name-Index Mismatches:** 243  
-- **Parsing Errors:** 9  
-- **Total Issues:** 642 
+| Issue Type             | Count | % of Total Issues |
+|------------------------|-------|-------------------|
+| Hallucinations         | 12    | 1.9%              |
+| Misinterpretations     | 378   | 58.9%             |
+| Name-Index Mismatches  | 243   | 37.8%             |
+| Parsing Errors         | 9     | 1.4%              |
+| **Total**              | 642   | 100%              |
 
 ### Memory & Learning Insights
 - Name-index mappings learned: 30  
