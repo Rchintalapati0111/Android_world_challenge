@@ -128,7 +128,11 @@ Outcome: Step accuracy and semantic accuracy both 0.0; episode failed despite no
 
 ---
 
+Learnings: 
+
+During this project, I learned that a significant portion of agentic behavior over UI can be shaped not only by the underlying LLM but also by the surrounding scaffolds—prompt design, memory, and evaluation. Few-shot examples improved the agent's ability to understand what to do, and self-reflection helped it avoid mistakes. Enforcing structured outputs via function calling dramatically reduced parsing ambiguity, but also exposed integration brittleness that required fallback logic. Building the name-index memory taught me that lightweight, heuristic learning (tracking successful and failed action patterns) can yield measurable gains in consistency without touching the LLM weights, and highlighted where deeper semantic generalization is still needed. Designing composite metrics (exact vs. semantic match, episode success, hallucination detection, reward) sharpened my understanding of what “progress” means in multi-step tasks. I also came away with clarity on the distinction between true reinforcement learning and the reward-aware heuristic/meta-guidance used here, seeing the potential next steps to make the system more adaptive (e.g., policy learning or contextual strategy selection). 
+
 ## 5. Conclusion
 
-The evaluation reveals meaningful learning progression, with the agent improving reward over time and establishing reliable name-index mappings. However, significant gaps remain in interpretability of UI elements, handling edge cases (silent failures), and fully leveraging hybrid prompting strengths. Addressing these with richer memory representations, adaptive prompting, and robust error-handling would materially improve end-to-end performance. 
+The evaluation reveals meaningful learning progression, with the agent improving reward over time and establishing reliable name-index mappings. However, significant gaps remain in the interpretability of UI elements, handling edge cases (silent failures), and fully leveraging hybrid prompting strengths (i.e, incorporating both few-shot and self-reflection). Addressing these with richer memory representations, adaptive prompting, and robust error-handling would materially improve end-to-end performance. 
 
