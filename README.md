@@ -12,7 +12,6 @@ Lightweight framework for evaluating LLMs (OpenAI GPT-4, Anthropic Claude, Mistr
 - Evaluation metrics: step accuracy, semantic/name-index accuracy, hallucination detection, episode success, RL-style reward.  
 - Temperature variants (deterministic vs balanced) for robustness.  
 - Report generation (Markdown/JSON) with failure analysis and illustrative examples.  
-- Streamlit dashboard for per-episode drill-down and aggregate visualization.
 
 ## Prerequisites
 
