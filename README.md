@@ -1,11 +1,28 @@
 # Evaluating LLM Agents in AndroidWorld
 
-This project explores the use of Large Language Models (LLMs) like GPT-4 for controlling Android UIs using natural language. Evaluated different prompting strategies on tasks from the AndroidWorld benchmark and analyzed agent performance using step accuracy, success rate, and hallucination rate.
+# Android World LLM Agent Evaluation
 
-##  Prompting Strategies
-- **Zero-Shot**: Only goal + UI context
-- **Few-Shot**: Exemplar actions with history
-- **Self-Reflection**: Agent reasons about its decisions
+Lightweight framework for evaluating LLMs (OpenAI GPT-4, Anthropic Claude, Mistral) as agents navigating Android UI tasks using the `android_world` benchmark. Supports multi-strategy prompting (zero-shot, few-shot, self-reflection), memory-enhanced name-index reasoning, structured function calling, and temperature variants.
+
+## Features
+
+- Episode loader for Android UI goals (e.g., take photo, move file, add contact).  
+- Prompting strategies: Zero-shot, Few-shot (adaptive examples), Self-reflection.  
+- Enhanced memory: name-index mappings, failure patterns, goal strategies.  
+- Function-calling / structured outputs to reduce parsing errors.  
+- Multi-model support: OpenAI, Anthropic/Claude, Mistral.  
+- Evaluation metrics: step accuracy, semantic/name-index accuracy, hallucination detection, episode success, RL-style reward.  
+- Temperature variants (deterministic vs balanced) for robustness.  
+- Report generation (Markdown/JSON) with failure analysis and illustrative examples.  
+- Streamlit dashboard for per-episode drill-down and aggregate visualization.
+
+## Prerequisites
+
+- Python 3.8+  
+- API keys (set as environment variables):  
+  - `OPENAI_API_KEY` (for GPT-4 / Mistral if using OpenAI-compatible endpoint)  
+  - `ANTHROPIC_API_KEY` (for Claude)  
+  - `MISTRALAI_API_KEY` (if using Mistral via its endpoint) 
 
 
 ## Folder Structure
