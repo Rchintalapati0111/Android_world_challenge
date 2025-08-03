@@ -62,14 +62,23 @@ Learning progression was tracked by comparing early vs. later episodes to detect
 | Balanced (T=0.5)| 30.6%         | 76.6%               | 33.3%                | 0.7%               |
 | Deterministic (T=0.0) | 28.3%  | 76.4%               | 40.0%                | 1.5%               |
 
-### Failure Breakdown
-| Issue Type             | Count | % of Total Issues |
-|------------------------|-------|-------------------|
-| Hallucinations         | 12    | 1.9%              |
-| Misinterpretations     | 378   | 58.9%             |
-| Name-Index Mismatches  | 243   | 37.8%             |
-| Parsing Errors         | 9     | 1.4%              |
-| **Total**              | 642   | 100%              |
+## 3. Failure Analysis: Where and Why LLMs Go Wrong
+
+| Issue Type             | Count | Notes / Causes |
+|------------------------|-------|----------------|
+| Hallucinations         | 12    | Actions referencing nonexistent or invalid UI elements; name/index mismatch leading to fabricated targets. |
+| Misinterpretations     | 378   | Goal misunderstanding, selecting semantically inappropriate actions (e.g., wrong field in multi-step forms). |
+| Name-Index Mismatches  | 243   | Predicted name and index inconsistent (clicking a label at the wrong index or vice versa). |
+| Parsing Errors         | 9     | Failures in structured output (missing function calls or malformed responses) causing silent breakdowns. |
+| **Total Issues**       | 642   | Aggregated failure sources degrading step and episode performance. |
+
+**Why they happen (summary):**
+- **Ambiguous UI representations:** The agent sometimes cannot disambiguate similarly labeled elements without stronger context, leading to name-index mismatches.  
+- **Insufficient recovery logic:** Early incorrect actions (especially in zero-shot) are rarely corrected, cascading into failures.  
+- **Prompt sensitivity:** Few-shot helps semantic alignment but can still lead to overfitting to examples; self-reflection increases reasoning overhead without guaranteeing correction.  
+- **Goal termination confusion:** Agents sometimes omit or misplace the `STATUS("complete")` signal, failing episodes despite making progress.
+
+---
 
 ### Memory & Learning Insights
 - Name-index mappings learned: 30  
