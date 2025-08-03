@@ -1,6 +1,6 @@
 # Android Agent Evaluation Report
 
-**Source:** `updated_results.md` benchmark outputs and episode logs. :contentReference[oaicite:22]{index=22}
+**Source:** `updated_results.md` benchmark outputs and episode logs. 
 
 ---
 
