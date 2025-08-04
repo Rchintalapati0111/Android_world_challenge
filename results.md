@@ -6,7 +6,6 @@ Loading real episode from: runs/run_20250720T123202422603/CameraTakePhoto_0.pkl.
  Goal: Take a photo using the camera app
  Available providers: openai, anthropic, mistral
 
-============================================================
 RUNNING OPENAI AGENT
 Goal: Take a photo using the camera app
 ============================================================
@@ -74,7 +73,7 @@ OPEN_APP(Camera, index=-1)
 CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'name': 'Shutter', 'index': 3, 'reasoning': 'Clicking on the Shutter button will capture a photo.'}
 
-============================================================
+
 RUNNING ANTHROPIC AGENT
 Goal: Take a photo using the camera app
 ============================================================
@@ -142,7 +141,6 @@ CLICK(Photos, index=9)
 CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'name': 'Shutter', 'index': 3, 'reasoning': 'Clicking the Shutter button will take a photo, which is the goal.'}
 
-============================================================
 RUNNING MISTRAL AGENT
 Goal: Take a photo using the camera app
 ============================================================
@@ -332,7 +330,6 @@ CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'name': 'Shutter', 'index': 3, 'reasoning': 'Clicking the Shutter button will take a photo, which is the goal.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Take one photo.
@@ -345,7 +342,6 @@ Episode Reward: 2.0
 
 [2/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: ContactsAddContact_0.pkl.gz
 Model: OPENAI | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -744,7 +740,6 @@ INPUT_TEXT(Pereira, index=8)
 Response: {'action_type': 'INPUT_TEXT', 'name': 'Phone number', 'index': 0, 'reasoning': "The next step is to input Hugo Pereira's phone number into the contact details to create a new contact."}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
@@ -757,7 +752,6 @@ Episode Reward: 6.0
 
 [3/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: FilesMoveFile_0.pkl.gz
 Model: OPENAI | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -1377,7 +1371,6 @@ Result: ❌ Match | ✅ Valid | Reward: +0.0
 
 ✅ Goal Completed
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
@@ -1390,7 +1383,6 @@ Episode Reward: 12.5
 
 [4/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: SystemBrightnessMax_0.pkl.gz
 Model: OPENAI | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -1784,7 +1776,6 @@ SCROLL(, index=0)
 Response: {'action_type': 'CLICK', 'name': 'Display brightness', 'index': 0, 'reasoning': "Clicking on the 'Display brightness' slider will allow us to adjust the brightness to the maximum value."}
 Result: ✅ Match | ✅ Valid | Reward: +2.0
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Turn brightness to the max value.
@@ -1800,7 +1791,6 @@ EVALUATION PHASE: OPENAI + FEW_SHOT
 
 [5/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: CameraTakePhoto_0.pkl.gz
 Model: OPENAI | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -1885,7 +1875,6 @@ CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'name': 'Shutter', 'index': 3, 'reasoning': 'Click shutter to take photo based on the learned pattern that shutter buttons are typically at index 1 or 2, but in this case, it is at index 3 as per the current UI elements.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Take one photo.
@@ -1898,7 +1887,6 @@ Episode Reward: 2.0
 
 [6/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: ContactsAddContact_0.pkl.gz
 Model: OPENAI | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -2297,7 +2285,6 @@ INPUT_TEXT(Pereira, index=8)
 Response: {'action_type': 'INPUT_TEXT', 'name': 'Phone number', 'index': 9, 'reasoning': "Input Hugo Pereira's phone number into the contact details"}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
@@ -2310,7 +2297,6 @@ Episode Reward: 6.0
 
 [7/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: FilesMoveFile_0.pkl.gz
 Model: OPENAI | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -2930,7 +2916,6 @@ Result: ❌ Match | ✅ Valid | Reward: +0.0
 
 ✅ Goal Completed
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
@@ -2943,7 +2928,6 @@ Episode Reward: 12.5
 
 [8/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: SystemBrightnessMax_0.pkl.gz
 Model: OPENAI | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -3337,7 +3321,6 @@ SCROLL(Brightness level, index=4)
 Response: {'action_type': 'SCROLL', 'name': 'Brightness level', 'index': 4, 'reasoning': 'Scrolling the Brightness level to the maximum value to achieve the goal.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Turn brightness to the max value.
@@ -3353,7 +3336,6 @@ EVALUATION PHASE: OPENAI + SELF_REFLECTION
 
 [9/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: CameraTakePhoto_0.pkl.gz
 Model: OPENAI | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
@@ -3438,7 +3420,6 @@ STATUS(, index=-1)
 Response: {'action_type': 'CLICK', 'name': 'Shutter', 'index': 3, 'reasoning': 'Based on the MEMORY INSIGHTS, clicking on the Shutter element with index 2 has a 100% success rate for taking a photo. However, the current UI elements list shows the Shutter element at index 3. Therefore, to achieve the goal of taking one photo, I should click on the Shutter element at index 3.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - SELF_REFLECTION STRATEGY
 ============================================================
 Goal: Take one photo.
@@ -3451,7 +3432,6 @@ Episode Reward: 0.0
 
 [10/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: ContactsAddContact_0.pkl.gz
 Model: OPENAI | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
@@ -3852,7 +3832,6 @@ Result: ❌ Match | ✅ Valid | Reward: +0.0
 
 ✅ Goal Completed
 
-============================================================
 EPISODE SUMMARY - SELF_REFLECTION STRATEGY
 ============================================================
 Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
@@ -3865,7 +3844,6 @@ Episode Reward: 6.0
 
 [11/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: FilesMoveFile_0.pkl.gz
 Model: OPENAI | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
@@ -4394,7 +4372,6 @@ Result: ❌ Match | ✅ Valid | Reward: +0.0
 
 ✅ Goal Completed
 
-============================================================
 EPISODE SUMMARY - SELF_REFLECTION STRATEGY
 ============================================================
 Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
@@ -4407,7 +4384,6 @@ Episode Reward: 12.5
 
 [12/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: SystemBrightnessMax_0.pkl.gz
 Model: OPENAI | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
@@ -4801,7 +4777,6 @@ STATUS(, index=-1)
 Response: {'action_type': 'STATUS', 'reasoning': 'Before proceeding with the self-reflection process, I need to verify the current status of the automation to ensure that I am on the correct screen and that the UI elements are accurately represented.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - SELF_REFLECTION STRATEGY
 ============================================================
 Goal: Turn brightness to the max value.
@@ -4817,7 +4792,6 @@ EVALUATION PHASE: ANTHROPIC + ZERO_SHOT
 
 [13/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: CameraTakePhoto_0.pkl.gz
 Model: ANTHROPIC | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -4902,7 +4876,6 @@ CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'name': 'Shutter', 'index': 3, 'reasoning': 'Clicking the Shutter button will take a photo, which is the goal.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Take one photo.
@@ -4915,7 +4888,6 @@ Episode Reward: 2.0
 
 [14/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: ContactsAddContact_0.pkl.gz
 Model: ANTHROPIC | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -5314,7 +5286,6 @@ CLICK(Save, index=2)
 Response: {'action_type': 'CLICK', 'index': 7, 'name': 'Create new contact', 'reasoning': 'The goal is to create a new contact for Hugo Pereira, so clicking the "Create new contact" button is the next logical step to move towards that goal.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
@@ -5327,7 +5298,6 @@ Episode Reward: 8.0
 
 [15/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: FilesMoveFile_0.pkl.gz
 Model: ANTHROPIC | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -5945,7 +5915,6 @@ CLICK(DCIM, index=12)
 Response: {'action_type': 'CLICK', 'name': 'DCIM', 'index': 2, 'reasoning': 'The goal is to move the file holiday_photos.jpg from Podcasts to DCIM within the same sdk_gphone_x86_64 storage area. The current UI shows DCIM as an option, so clicking on it will navigate to the DCIM folder where we can then move the file.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
@@ -5958,7 +5927,6 @@ Episode Reward: 16.5
 
 [16/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: SystemBrightnessMax_0.pkl.gz
 Model: ANTHROPIC | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -5999,7 +5967,6 @@ Result: ❌ Match | ✅ Valid | Reward: +0.0
 
 ✅ Goal Completed
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Turn brightness to the max value.
@@ -6015,7 +5982,6 @@ EVALUATION PHASE: ANTHROPIC + FEW_SHOT
 
 [17/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: CameraTakePhoto_0.pkl.gz
 Model: ANTHROPIC | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -6100,7 +6066,6 @@ CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'index': 3, 'name': 'Shutter', 'reasoning': 'Click the shutter button to take a photo, based on the patterns from the examples.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Take one photo.
@@ -6113,7 +6078,6 @@ Episode Reward: 2.0
 
 [18/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: ContactsAddContact_0.pkl.gz
 Model: ANTHROPIC | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -6512,7 +6476,6 @@ INPUT_TEXT(Pereira, index=8)
 Response: {'action_type': 'INPUT_TEXT', 'index': 9, 'name': '+13920741751', 'reasoning': 'Input the phone number for the new contact'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
@@ -6525,7 +6488,6 @@ Episode Reward: 6.0
 
 [19/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: FilesMoveFile_0.pkl.gz
 Model: ANTHROPIC | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -7143,7 +7105,6 @@ CLICK(DCIM, index=12)
 Response: {'action_type': 'CLICK', 'index': 12, 'name': 'DCIM', 'reasoning': 'Navigate to the DCIM folder to move the file there'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
@@ -7156,7 +7117,6 @@ Episode Reward: 17.0
 
 [20/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: SystemBrightnessMax_0.pkl.gz
 Model: ANTHROPIC | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -7550,7 +7510,6 @@ CLICK(Display brightness, index=0)
 Response: {'action_type': 'CLICK', 'index': 0, 'name': 'Display brightness', 'reasoning': 'Click on the Display brightness option to access the brightness settings'}
 Result: ✅ Match | ✅ Valid | Reward: +2.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Turn brightness to the max value.
@@ -7566,7 +7525,6 @@ EVALUATION PHASE: ANTHROPIC + SELF_REFLECTION
 
 [21/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: CameraTakePhoto_0.pkl.gz
 Model: ANTHROPIC | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
@@ -7651,7 +7609,6 @@ CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'index': 3, 'name': 'Shutter', 'reasoning': 'The Shutter button is the most logical next step to take a photo, based on the previous successful actions of clicking the Shutter button to take a photo.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - SELF_REFLECTION STRATEGY
 ============================================================
 Goal: Take one photo.
@@ -7664,7 +7621,6 @@ Episode Reward: 2.0
 
 [22/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: ContactsAddContact_0.pkl.gz
 Model: ANTHROPIC | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
@@ -8063,7 +8019,6 @@ CLICK(Create contact, index=1)
 Response: {'action_type': 'CLICK', 'index': 7, 'name': 'Create new contact', 'reasoning': 'The goal is to create a new contact for Hugo Pereira, and the "Create new contact" UI element is the logical next step to initiate this process.'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - SELF_REFLECTION STRATEGY
 ============================================================
 Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
@@ -8076,7 +8031,6 @@ Episode Reward: 7.5
 
 [23/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: FilesMoveFile_0.pkl.gz
 Model: ANTHROPIC | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
@@ -8694,7 +8648,6 @@ CLICK(Podcasts, index=19)
 Response: {'action_type': 'CLICK', 'index': 1, 'name': 'Show roots', 'reasoning': "The 'Show roots' button at index 1 has historically worked well to navigate to the root storage area, which is necessary to move the file from Podcasts to DCIM."}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - SELF_REFLECTION STRATEGY
 ============================================================
 Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
@@ -8707,7 +8660,6 @@ Episode Reward: 14.5
 
 [24/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: SystemBrightnessMax_0.pkl.gz
 Model: ANTHROPIC | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
@@ -9101,7 +9053,6 @@ CLICK(Display brightness, index=0)
 Response: {'action_type': 'CLICK', 'index': 0, 'name': 'Display brightness', 'reasoning': "Based on the previous successful actions, clicking on the 'Display brightness' element at index 0 is the most logical next step to increase the brightness to the max value."}
 Result: ✅ Match | ✅ Valid | Reward: +2.0
 
-============================================================
 EPISODE SUMMARY - SELF_REFLECTION STRATEGY
 ============================================================
 Goal: Turn brightness to the max value.
@@ -9117,7 +9068,6 @@ EVALUATION PHASE: MISTRAL + ZERO_SHOT
 
 [25/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: CameraTakePhoto_0.pkl.gz
 Model: MISTRAL | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -9202,7 +9152,6 @@ CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'name': 'Shutter', 'index': 3, 'reasoning': "The goal is to take a photo. The 'Shutter' button is typically used to capture a photo in camera apps, so clicking it should achieve the goal."}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Take one photo.
@@ -9215,7 +9164,6 @@ Episode Reward: 2.0
 
 [26/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: ContactsAddContact_0.pkl.gz
 Model: MISTRAL | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -9614,7 +9562,6 @@ INPUT_TEXT(Pereira, index=8)
 Response: {'action_type': 'CLICK', 'name': 'Phone', 'index': 4, 'reasoning': "The next step in creating a new contact is to add the phone number. Selecting the 'Phone' field will allow me to input Hugo Pereira's number."}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
@@ -9627,7 +9574,6 @@ Episode Reward: 6.0
 
 [27/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: FilesMoveFile_0.pkl.gz
 Model: MISTRAL | Strategy: ZERO_SHOT | Function Calling + Memory
 ================================================================================
@@ -10378,7 +10324,6 @@ Result: ❌ Match | ✅ Valid | Reward: +0.0
 
 ✅ Goal Completed
 
-============================================================
 EPISODE SUMMARY - ZERO_SHOT STRATEGY
 ============================================================
 Goal: Turn brightness to the max value.
@@ -10394,7 +10339,6 @@ EVALUATION PHASE: MISTRAL + FEW_SHOT
 
 [29/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: CameraTakePhoto_0.pkl.gz
 Model: MISTRAL | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -10479,7 +10423,6 @@ CLICK(Shutter, index=2)
 Response: {'action_type': 'CLICK', 'name': 'Shutter', 'index': 3, 'reasoning': "Shutter button typically at index 1 or 2, but in this case it's at index 3. Clicking it to take a photo."}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Take one photo.
@@ -10492,7 +10435,6 @@ Episode Reward: 2.0
 
 [30/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: ContactsAddContact_0.pkl.gz
 Model: MISTRAL | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -10891,7 +10833,6 @@ INPUT_TEXT(Pereira, index=8)
 Response: {'action_type': 'CLICK', 'name': 'Phone', 'index': 8, 'reasoning': 'Click on the phone field to enter the phone number'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Create a new contact for Hugo Pereira. Their number is +13920741751.
@@ -10904,7 +10845,6 @@ Episode Reward: 6.0
 
 [31/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: FilesMoveFile_0.pkl.gz
 Model: MISTRAL | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -11522,7 +11462,6 @@ CLICK(Podcasts, index=19)
 Response: {'action_type': 'CLICK', 'name': 'Show roots', 'index': 1, 'reasoning': 'Need to access the root storage to navigate to the correct directory'}
 Result: ❌ Match | ✅ Valid | Reward: +0.0
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Move the file holiday_photos.jpg from Podcasts within the sdk_gphone_x86_64 storage area to the DCIM within the same sdk_gphone_x86_64 storage area in the Android filesystem.
@@ -11535,7 +11474,6 @@ Episode Reward: 17.5
 
 [32/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: SystemBrightnessMax_0.pkl.gz
 Model: MISTRAL | Strategy: FEW_SHOT | Function Calling + Memory
 ================================================================================
@@ -11692,7 +11630,6 @@ Result: ❌ Match | ✅ Valid | Reward: +0.0
 
 ✅ Goal Completed
 
-============================================================
 EPISODE SUMMARY - FEW_SHOT STRATEGY
 ============================================================
 Goal: Turn brightness to the max value.
@@ -11708,7 +11645,6 @@ EVALUATION PHASE: MISTRAL + SELF_REFLECTION
 
 [33/36] Testing combination...
 
-================================================================================
 RL-ENHANCED EVALUATION: CameraTakePhoto_0.pkl.gz
 Model: MISTRAL | Strategy: SELF_REFLECTION | Function Calling + Memory
 ================================================================================
