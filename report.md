@@ -1,127 +1,138 @@
-Evaluating LLM Agents in AndroidWorld Project: Prompting, Performance, and their Limitations 
+# Android Agent Evaluation Report
 
-1. Approach to Prompting and Evaluation: 
+**Source:** `updated_results.md` benchmark outputs and episode logs. 
 
-I implemented three prompting strategies to guide a GPT-4 agent in navigating Android UI tasks:
+---
 
-A. Zero-shot prompting: The LLM is only provided the goal and current UI elements.
+## 1. Approach to Prompting and Evaluation
 
-B. Few-shot prompting: Includes exemplar agent behaviors from similar tasks to improve grounding.
+I evaluated a multi-model Android agent under three prompting strategies: **Zero-shot**, **Few-shot**, and **Self-reflection**, combined with RL-enhanced memory (name-index and element mappings) and temperature variants (Deterministic vs Balanced). Models tested were OpenAI, Anthropic (Claude), and Mistral. Each base episode was expanded by temperature variants to form a comprehensive set of 90 evaluations (5 base episodes × 2 temperatures × 3 strategies × 3 models). 
 
-C. Self-reflection prompting: Encourages the agent to reflect on progress, verify actions, and reason before acting.
+**Prompting strategies:**
+- **Zero-shot:** Direct instructions without examples.
+- **Few-shot:** Included exemplar behavior to guide action selection.
+- **Self-reflection:** Agent was encouraged to reason about past steps before acting, aiming to reduce errors/hallucinations. 
 
-The agent loop loads episodes from the AndroidWorld benchmark, generates prompts based on the current UI screen, and queries GPT-4 to predict the next best action. Prompts were made configurable and reusable across episodes.
+**Evaluation metrics:**
+- **Step Accuracy:** Correctness of individual UI action predictions.
+- **Semantic Accuracy:** Higher-level goal-aligned correctness.
+- **Success Rate:** Episode-level goal fulfillment.
+- **Hallucination Rate:** Spurious or unsupported actions.
+- **Name-Index Accuracy:** Memory fidelity in recalling UI element mappings.
+- **RL Reward:** Aggregated reward signal reflecting task progress. 
 
-2. Summary of the Performance Metrics: 
+Learning progression was tracked by comparing early vs. later episodes to detect improvements attributable to the memory system. 
 
-I evaluated 10 episodes (5 unique × 2 variants) using all three prompt styles, collecting step-by-step logs and metrics.
+---
 
-(In the third part of the question, I selected 5 unique tasks from the AndroidWorld benchmark and evaluated 2 different episode variants for each task, making a total of 10 episodes. Each episode was run separately using all three prompting strategies: zero-shot, few-shot, and self-reflection—while logging the agent's step-by-step predictions. The predicted actions were then compared against ground-truth to compute step accuracy, success rate, and hallucination rate)
+## 2. Summary of Performance Metrics
 
-The following table has the information - 
+### Overall Results (Comprehensive Benchmark)
 
-Prompting Strategy Comparison
+| Metric                     | Value                                                            |
+|---------------------------|------------------------------------------------------------------|
+| Total Evaluations         | 90                                                               |
+| Average Step Accuracy     | 29.5%                                                            |
+| Average Name-Index Accuracy | 76.5%                                                          |
+| Episode Success Rate      | 36.7%                                                            |
+| Hallucination Rate        | 1.1%                                                             |
+| Average RL Reward         | 16.9                                                             |
+| Learning Detected         | Yes (early avg reward 16.1 → late 17.7, **+1.6** improvement)    |
 
-| Prompt Variant    | Step Accuracy | Episode Success Rate | Hallucination Rate |
-|-------------------|---------------|-----------------------|--------------------|
-| Zero-Shot         | 10.9%         | 0.0%                  | 1.5%               |
-| Few-Shot          | 25.6%         | 40.0%                 | 4.0%               |
-| Self-Reflection   | 18.4%         | 40.0%                 | 5.3%               |
 
-Where, 
+### Model Ranking (Aggregated across strategies)
+| Rank | Model (Provider)      | Step Accuracy | Name-Index Accuracy |
+|------|----------------------|---------------|---------------------|
+| 1    | Claude (Anthropic)   | 39.4%         | 79.1%               |
+| 2    | Mistral              | 26.4%         | 82.8%               |
+| 3    | OpenAI               | 22.6%         | 67.5%               |
 
-A. Step Accuracy: Percentage of individual actions correctly predicted compared to ground truth steps
-B. Episode Success Rate: Proportion of episodes where the agent fully completed the task goal
-C. Hallucination Rate: Frequency of actions involving UI elements that were not present in the given observation
+### Strategy Ranking
+| Rank | Strategy         | Step Accuracy | Name-Index Accuracy |
+|------|------------------|---------------|---------------------|
+| 1    | Few-shot         | 33.6%         | 77.7%               |
+| 2    | Self-reflection  | 28.2%         | 73.3%               |
+| 3    | Zero-shot        | 26.6%         | 78.4%               |
 
-3. Example Episodes: 
+*(Note: In a separate aggregated view, SELF_REFLECTION was also highlighted as best in some contexts for robustness and lowest hallucination.)* 
 
-A. CameraTakePhoto: 
+### Temperature Variant Analysis
+| Variant         | Step Accuracy | Name-Index Accuracy | Episode Success Rate | Hallucination Rate |
+|-----------------|---------------|---------------------|----------------------|--------------------|
+| Balanced (T=0.5)| 30.6%         | 76.6%               | 33.3%                | 0.7%               |
+| Deterministic (T=0.0) | 28.3%  | 76.4%               | 40.0%                | 1.5%               |
 
-Goal: Take one photo.
+## 3. Failure Analysis: Where and Why LLMs Go Wrong
 
-Few-Shot Prompt:
+| Issue Type             | Count | Notes / Causes |
+|------------------------|-------|----------------|
+| Hallucinations         | 12    | Actions referencing nonexistent or invalid UI elements; name/index mismatch leading to fabricated targets. |
+| Misinterpretations     | 378   | Goal misunderstanding, selecting semantically inappropriate actions (e.g., wrong field in multi-step forms). |
+| Name-Index Mismatches  | 243   | Predicted name and index inconsistent (clicking a label at the wrong index or vice versa). |
+| Parsing Errors         | 9     | Failures in structured output (missing function calls or malformed responses) causing silent breakdowns. |
+| **Total Issues**       | 642   | Aggregated failure sources degrading step and episode performance. |
 
-Step 1: OPEN_APP("Camera") ✅
+**Why they happen (summary):**
+- **Ambiguous UI representations:** The agent sometimes cannot disambiguate similarly labeled elements without stronger context, leading to name-index mismatches.  
+- **Insufficient recovery logic:** Early incorrect actions (especially in zero-shot) are rarely corrected, cascading into failures.  
+- **Prompt sensitivity:** Few-shot helps semantic alignment but can still lead to overfitting to examples; self-reflection increases reasoning overhead without guaranteeing correction.  
+- **Goal termination confusion:** Agents sometimes omit or misplace the `STATUS("complete")` signal, failing episodes despite making progress.
 
-Step 2: CLICK("Shutter") ❌ (expected: CLICK("element_2"))
+---
 
-Step 3: STATUS("complete") ✅
+### Memory & Learning Insights
+- Name-index mappings learned: 30  
+- Element mappings learned: 0 (suggests limited abstraction beyond direct name-index pairs)  
+- Action history entries: 900  
+- Top reliable mappings (e.g., Display brightness, Shutter) had 100% success rates in their contexts. 
 
-Success: ✅
+---
 
-B. ContactsAddContact: 
+## 3. Illustrative Example Episodes
 
-Goal: Add Hugo Pereira, +13920741751
+### Example 1: **Successful Photo Capture with Mistral (Self-contained agent execution)**
+Agent goal: Take a photo using the camera app.  
+Sequence: open Camera app → click Shutter → status complete.  
+Outcome: ✅ Goal completed with correct reasoning and terminal status. 
 
-Few-Shot Prompt:
+### Example 2: **Zero-shot OpenAI Agent Attempt (CameraTakePhoto)**
+In the enhanced three-strategy evaluation, the OpenAI agent under Zero-shot:
+- Mistakenly clicked an unknown home-screen element as “Camera” in step 1 (resulting in a mismatch), then correctly clicked the shutter, and achieved completion with mixed correctness at intermediate steps.  
+- This illustrates both the value and limits of zero-shot reasoning without strong disambiguation of UI elements. 
 
-Correct input fields: Hugo, Pereira, +13920741751
+### Example 3: **Failure Case – Self-reflection Strategy for Brightness Adjustment**
+Goal: Turn brightness to maximum.  
+Outcome: Step accuracy and semantic accuracy both 0.0; episode failed despite no hallucinations. Error included missing expected function call in Mistral response (demonstrating brittle integration points). 
 
-Incorrect: Clicked "Save" instead of index-based element
+---
 
-Success: ✅
+## 4. Recommendations for Improving Agent Behavior
 
-C. FilesMoveFile: 
+1. **Enhance Memory Generalization:**
+   - Current learning largely centers on name-index mappings; element mappings are absent or underutilized. Introduce hierarchical or semantic embeddings of UI elements so the agent can generalize across similar but previously unseen elements. 
 
-Goal: Move file from Podcasts → DCIM
+2. **Robust Parsing & Retry Logic:**
+   - Parsing errors and missing function calls (e.g., in Mistral during a brightness episode) lead to silent failures. Implement explicit detection of failed or no-op responses with automatic retries, fallbacks (e.g., alternative candidate elements), and confidence thresholds to prompt re-querying or clarification. 
 
-All Prompts:
+3. **Strategy Calibration:**
+   - Few-shot delivered the best step accuracy, but Self-reflection showed robustness and low hallucination; consider hybrid prompting that uses few-shot exemplars plus a lightweight reflective check to reconcile conflicting signals. 
 
-Major failures due to complex multi-step navigation
+4. **Temperature Scheduling:**
+   - Balanced temperature generally yielded better trade-offs; adopt dynamic temperature adjustment based on task complexity or recent success/failure history instead of static settings. 
 
-Hallucinations: "Move here", "DCIM"
+5. **Failure Attribution & Feedback Loop:**
+   - Systematically categorize failures (hallucinations vs misinterpretations vs name-index mismatches) and feed structured summaries back into prompt/context conditioning to enable meta-learning over episodes. 
 
-Success: ❌
+6. **Increase Episode Diversity & Volume:**
+   - The benchmark used temperature variants to meet the “10+ episode” requirement, but more base episodes with varied UI states would improve learning signal and reduce overfitting to seen patterns. 
 
-4. Failure Analysis: 
-
-A. Where LLMs Fail ?
-
-- When complex multi-step tasks are involved (e.g., FilesMoveFile)
-
-- Mapping semantic labels to element indices (e.g., "Save" vs element_2)
-
-- Forgetting previous actions in long tasks
-
-B. Why LLMs Fail ? 
-
-- Format mismatch: LLM uses visible text; ground truth uses index-based actions
-
-- Limited memory: LLM can't fully recall UI progress or app states
-
-- Goal misunderstanding: Partial completion or wrong app
-
-- Hallucination: Generates plausible but invalid UI elements which causes the issue of hallucination
-
-5. Interesting Behaviors Observed in the Project: 
-
-- Hallucinations: The agent predicts actions involving UI elements like "Move here" or "Paste" that don't actually exist in the current screen.
-
-- Overgeneralization: The model applies the same action (like clicking "Shutter") across tasks without checking if it's contextually appropriate.
-
-- Self-Reflection Benefits: Encouraging the agent to reflect improves decision-making, but it still struggles with following the exact action format (e.g., using labels instead of indices).
-
-6. Recommendations for Improving Agent Behavior: 
-
-- Integrate short-term memory buffer to retain action and observation history
-
-- Add UI index-to-label mapping to align predicted vs ground-truth actions
-
-- Implement search + verification sub-agents to validate UI presence before acting
-
-- Try tool-augmented prompting (e.g., function calling) for stricter outputs
+---
 
 Learnings: 
 
-This project was one of the most exciting explorations I’ve participated in - prompting and evaluating Android-based LLM agents. I learned how even small changes in prompt design, like providing few-shot examples or asking the model to self-reflect, can significantly impact an agent’s reasoning and performance. Implementing fuzzy matching (RapidFuzz) taught me how to bridge the gap between model predictions and ground-truth data. I understood the limitations of LLMs in real-life applications, like the tendency to hallucinate, forgetting past steps, or misinterpreting UI semantics. 
+During this project, I learned that a significant portion of agentic behavior over UI can be shaped not only by the underlying LLM but also by the surrounding scaffolds—prompt design, memory, and evaluation. Few-shot examples improved the agent's ability to understand what to do, and self-reflection helped it avoid mistakes. Enforcing structured outputs via function calling dramatically reduced parsing ambiguity, but also exposed integration brittleness that required fallback logic. Building the name-index memory taught me that lightweight, heuristic learning (tracking successful and failed action patterns) can yield measurable gains in consistency without touching the LLM weights, and highlighted where deeper semantic generalization is still needed. Designing composite metrics (exact vs. semantic match, episode success, hallucination detection, reward) sharpened my understanding of what “progress” means in multi-step tasks. I also came away with clarity on the distinction between true reinforcement learning and the reward-aware heuristic/meta-guidance used here, seeing the potential next steps to make the system more adaptive (e.g., policy learning or contextual strategy selection). 
 
+## 5. Conclusion
 
-
-
-
-
-
-
-
+The evaluation reveals meaningful learning progression, with the agent improving reward over time and establishing reliable name-index mappings. However, significant gaps remain in the interpretability of UI elements, handling edge cases (silent failures), and fully leveraging hybrid prompting strengths (i.e, incorporating both few-shot and self-reflection). Addressing these with richer memory representations, adaptive prompting, and robust error-handling would materially improve end-to-end performance. 
 
