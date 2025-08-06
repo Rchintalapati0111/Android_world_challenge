@@ -4,7 +4,7 @@ Enhanced Android Agent with RL, Memory, and Function Calling
 + JSON Rollout Saving (compatible with your previous replay style)
 
 What’s new:
-- Saves one JSON per (episode × model × strategy) at runs/llm_rollouts_v2/
+- Saves one JSON per (episode × model × strategy) at runs/llm_results2/
 - Includes actions (Reason/Action format), responses (structured), and step_records
 """
 
