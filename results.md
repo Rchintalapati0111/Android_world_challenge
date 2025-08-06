@@ -13477,7 +13477,7 @@ Part 3:
 ====================================================================================================
 Features: Name-Index Prediction | Multi-Model | RL Memory | Comprehensive Analysis
 ====================================================================================================
-/Users/renukachintalapati/android_world/scripts/updated_part3.py:153: LangChainDeprecationWarning: Please see the migration guide at: https://python.langchain.com/docs/versions/migrating_memory/
+/Users/renukachintalapati/android_world/scripts/updated_part3.py:175: LangChainDeprecationWarning: Please see the migration guide at: https://python.langchain.com/docs/versions/migrating_memory/
   self.conversation_memory = ConversationBufferMemory(
 
 🔑 Model API Status:
@@ -13512,20 +13512,20 @@ TESTING MODEL: OPENAI
    🌡️ Temperature Variant: Deterministic (T=0.0)
    Consistent, reliable responses
    --------------------------------------------------
-[  1/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.000 | NI: 0.125 | Reward: +8.8
-[  2/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.333 | Reward: +3.0
-[  3/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.100 | NI: 0.100 | Reward: +14.8
-[  4/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.050 | NI: 0.050 | Reward: +14.2
-[  5/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.222 | NI: 0.222 | Reward: +18.0
+[  1/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.250 | NI: 0.375 | Reward: +15.8
+[  2/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.333 | Reward: +4.0
+[  3/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.100 | NI: 0.200 | Reward: +16.8
+[  4/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.000 | NI: 0.050 | Reward: +14.2
+[  5/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.111 | NI: 0.222 | Reward: +18.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
-[  6/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.125 | NI: 0.250 | Reward: +12.2
-[  7/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +2.0
-[  8/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.100 | NI: 0.100 | Reward: +13.8
-[  9/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.100 | NI: 0.150 | Reward: +14.7
-[ 10/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.222 | NI: 0.222 | Reward: +17.0
+[  6/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.375 | NI: 0.500 | Reward: +19.8
+[  7/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.000 | NI: 0.333 | Reward: +3.0
+[  8/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.100 | NI: 0.200 | Reward: +15.7
+[  9/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.000 | NI: 0.050 | Reward: +15.8
+[ 10/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.222 | NI: 0.333 | Reward: +20.5
 
 📋 Strategy: Few Shot
 ------------------------------------------------------------
@@ -13533,20 +13533,20 @@ TESTING MODEL: OPENAI
    🌡️ Temperature Variant: Deterministic (T=0.0)
    Consistent, reliable responses
    --------------------------------------------------
-[ 11/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.250 | NI: 0.500 | Reward: +17.8
-[ 12/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.667 | NI: 0.667 | Reward: +8.5
-[ 13/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.200 | NI: 0.400 | Reward: +19.2
-[ 14/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.150 | NI: 0.200 | Reward: +30.8
-[ 15/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.222 | NI: 0.222 | Reward: +18.0
+[ 11/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.125 | NI: 0.250 | Reward: +10.8
+[ 12/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.333 | Reward: +3.0
+[ 13/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.100 | NI: 0.200 | Reward: +13.7
+[ 14/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.050 | NI: 0.150 | Reward: +23.2
+[ 15/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.222 | NI: 0.222 | Reward: +16.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
-[ 16/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.125 | NI: 0.250 | Reward: +12.8
-[ 17/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.333 | NI: 0.667 | Reward: +7.5
-[ 18/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.200 | NI: 0.400 | Reward: +17.2
-[ 19/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.250 | NI: 0.300 | Reward: +37.2
-[ 20/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.333 | NI: 0.333 | Reward: +21.5
+[ 16/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.375 | NI: 0.625 | Reward: +20.2
+[ 17/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.667 | NI: 1.000 | Reward: +10.5
+[ 18/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.000 | NI: 0.100 | Reward: +11.8
+[ 19/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.100 | NI: 0.250 | Reward: +26.2
+[ 20/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.222 | NI: 0.222 | Reward: +17.5
 
 📋 Strategy: Self Reflect
 ------------------------------------------------------------
@@ -13554,20 +13554,20 @@ TESTING MODEL: OPENAI
    🌡️ Temperature Variant: Deterministic (T=0.0)
    Consistent, reliable responses
    --------------------------------------------------
-[ 21/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.375 | NI: 0.000 | Reward: +9.8
-[ 22/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 1.000 | NI: 1.000 | Reward: +12.5
-[ 23/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +7.8
-[ 24/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.200 | NI: 0.250 | Reward: +32.8
-[ 25/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.111 | NI: 0.000 | Reward: +7.5
+[ 21/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.375 | NI: 0.625 | Reward: +19.8
+[ 22/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.667 | NI: 1.000 | Reward: +10.5
+[ 23/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.100 | NI: 0.200 | Reward: +14.7
+[ 24/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.150 | NI: 0.150 | Reward: +28.2
+[ 25/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.333 | NI: 0.333 | Reward: +20.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
-[ 26/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.500 | NI: 0.250 | Reward: +15.8
-[ 27/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 1.000 | NI: 1.000 | Reward: +12.5
-[ 28/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.200 | NI: 0.400 | Reward: +18.8
-[ 29/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.200 | NI: 0.200 | Reward: +28.8
-[ 30/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.222 | NI: 0.111 | Reward: +11.5
+[ 26/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.375 | NI: 0.625 | Reward: +20.8
+[ 27/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.667 | NI: 1.000 | Reward: +10.5
+[ 28/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.200 | NI: 0.300 | Reward: +17.2
+[ 29/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.050 | NI: 0.100 | Reward: +26.3
+[ 30/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.333 | NI: 0.333 | Reward: +20.5
 
 ================================================================================
 TESTING MODEL: CLAUDE
@@ -13579,20 +13579,20 @@ TESTING MODEL: CLAUDE
    🌡️ Temperature Variant: Deterministic (T=0.0)
    Consistent, reliable responses
    --------------------------------------------------
-[ 31/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.375 | NI: 0.375 | Reward: +17.2
+[ 31/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.375 | NI: 0.375 | Reward: +16.2
 [ 32/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.667 | NI: 0.667 | Reward: +9.5
-[ 33/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.500 | NI: 0.500 | Reward: +26.2
-[ 34/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.100 | NI: 0.100 | Reward: +25.8
-[ 35/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.444 | NI: 0.444 | Reward: +24.0
+[ 33/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.300 | NI: 0.300 | Reward: +18.2
+[ 34/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.250 | NI: 0.300 | Reward: +34.8
+[ 35/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.333 | NI: 0.333 | Reward: +21.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
-[ 36/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.250 | NI: 0.250 | Reward: +13.8
-[ 37/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.333 | NI: 0.333 | Reward: +6.5
-[ 38/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.400 | NI: 0.400 | Reward: +23.2
-[ 39/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.150 | NI: 0.150 | Reward: +25.8
-[ 40/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.444 | NI: 0.222 | Reward: +19.0
+[ 36/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.375 | NI: 0.375 | Reward: +15.2
+[ 37/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.667 | NI: 0.667 | Reward: +9.5
+[ 38/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.300 | NI: 0.300 | Reward: +18.7
+[ 39/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.250 | NI: 0.300 | Reward: +34.2
+[ 40/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.111 | NI: 0.111 | Reward: +16.0
 
 📋 Strategy: Few Shot
 ------------------------------------------------------------
@@ -13601,19 +13601,19 @@ TESTING MODEL: CLAUDE
    Consistent, reliable responses
    --------------------------------------------------
 [ 41/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.500 | NI: 0.500 | Reward: +21.8
-[ 42/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.667 | NI: 0.667 | Reward: +9.5
-[ 43/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.300 | NI: 0.300 | Reward: +18.8
-[ 44/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.250 | NI: 0.250 | Reward: +32.8
-[ 45/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.222 | NI: 0.222 | Reward: +17.0
+[ 42/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.333 | NI: 0.333 | Reward: +6.5
+[ 43/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.300 | NI: 0.300 | Reward: +19.2
+[ 44/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.200 | NI: 0.200 | Reward: +33.2
+[ 45/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.222 | NI: 0.222 | Reward: +18.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
-[ 46/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.500 | NI: 0.750 | Reward: +23.8
+[ 46/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.500 | NI: 0.625 | Reward: +22.8
 [ 47/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.667 | NI: 0.667 | Reward: +9.5
-[ 48/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.400 | NI: 0.400 | Reward: +22.2
-[ 49/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.300 | NI: 0.350 | Reward: +38.8
-[ 50/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.222 | NI: 0.222 | Reward: +17.0
+[ 48/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.300 | NI: 0.300 | Reward: +20.2
+[ 49/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.250 | NI: 0.300 | Reward: +35.8
+[ 50/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.333 | NI: 0.222 | Reward: +15.5
 
 📋 Strategy: Self Reflect
 ------------------------------------------------------------
@@ -13621,20 +13621,20 @@ TESTING MODEL: CLAUDE
    🌡️ Temperature Variant: Deterministic (T=0.0)
    Consistent, reliable responses
    --------------------------------------------------
-[ 51/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.625 | NI: 0.625 | Reward: +22.8
+[ 51/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.625 | NI: 0.750 | Reward: +24.8
 [ 52/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 1.000 | NI: 1.000 | Reward: +12.5
-[ 53/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.400 | NI: 0.400 | Reward: +23.2
-[ 54/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.250 | NI: 0.300 | Reward: +31.8
-[ 55/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.222 | NI: 0.222 | Reward: +19.0
+[ 53/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.200 | NI: 0.200 | Reward: +16.2
+[ 54/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.200 | NI: 0.200 | Reward: +32.8
+[ 55/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.222 | NI: 0.222 | Reward: +18.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
-[ 56/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.500 | NI: 0.625 | Reward: +21.8
+[ 56/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.500 | NI: 0.500 | Reward: +19.8
 [ 57/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 1.000 | NI: 1.000 | Reward: +12.5
-[ 58/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.400 | NI: 0.400 | Reward: +23.2
-[ 59/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.150 | NI: 0.150 | Reward: +24.8
-[ 60/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.111 | NI: 0.111 | Reward: +11.5
+[ 58/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.300 | NI: 0.300 | Reward: +19.2
+[ 59/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.250 | NI: 0.250 | Reward: +33.2
+[ 60/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.222 | NI: 0.222 | Reward: +19.5
 
 ================================================================================
 TESTING MODEL: MISTRAL
@@ -13648,14 +13648,14 @@ TESTING MODEL: MISTRAL
    --------------------------------------------------
 [ 61/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +9.8
 [ 62/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +3.5
-[ 63/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.100 | NI: 0.100 | Reward: +15.2
-[ 64/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +23.8
-[ 65/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.111 | NI: 0.111 | Reward: +15.0
+[ 63/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +12.2
+[ 64/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +24.8
+[ 65/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +11.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
-[ 66/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.125 | NI: 0.125 | Reward: +12.8
+[ 66/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +9.8
 [ 67/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +3.5
 [ 68/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +12.2
 [ 69/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +24.8
@@ -13667,19 +13667,19 @@ TESTING MODEL: MISTRAL
    🌡️ Temperature Variant: Deterministic (T=0.0)
    Consistent, reliable responses
    --------------------------------------------------
-[ 71/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +9.2
+[ 71/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +9.8
 [ 72/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +3.5
 [ 73/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +12.2
-[ 74/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.050 | NI: 0.050 | Reward: +25.8
-[ 75/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +10.5
+[ 74/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +24.8
+[ 75/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +11.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
 [ 76/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +9.8
 [ 77/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +3.5
-[ 78/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +11.2
-[ 79/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.050 | NI: 0.050 | Reward: +26.8
+[ 78/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +12.2
+[ 79/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +24.8
 [ 80/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +11.0
 
 📋 Strategy: Self Reflect
@@ -13688,24 +13688,24 @@ TESTING MODEL: MISTRAL
    🌡️ Temperature Variant: Deterministic (T=0.0)
    Consistent, reliable responses
    --------------------------------------------------
-[ 81/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.000 | NI: 0.125 | Reward: +10.8
+[ 81/90] ContactsAddContact_0.pkl. T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +9.8
 [ 82/90] CameraTakePhoto_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +3.5
 [ 83/90] SystemBrightnessMax_0.pkl T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +12.2
-[ 84/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.050 | NI: 0.050 | Reward: +27.8
-[ 85/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.111 | NI: 0.000 | Reward: +11.5
+[ 84/90] FilesMoveFile_0.pkl.gz    T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +24.8
+[ 85/90] ClockTimerEntry_0.pkl.gz  T=0.0 ✅ Acc: 0.000 | NI: 0.000 | Reward: +11.0
 
    🌡️ Temperature Variant: Balanced (T=0.5)
    Balanced creativity with reliability
    --------------------------------------------------
-[ 86/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.000 | NI: 0.125 | Reward: +10.8
+[ 86/90] ContactsAddContact_0.pkl. T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +9.8
 [ 87/90] CameraTakePhoto_0.pkl.gz  T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +3.5
 [ 88/90] SystemBrightnessMax_0.pkl T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +12.2
-[ 89/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.050 | NI: 0.050 | Reward: +27.8
+[ 89/90] FilesMoveFile_0.pkl.gz    T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +24.8
 [ 90/90] ClockTimerEntry_0.pkl.gz  T=0.5 ✅ Acc: 0.000 | NI: 0.000 | Reward: +11.0
 
 ================================================================================
 BENCHMARKING COMPLETE
-Duration: 3603.4 seconds | Results: 90
+Duration: 2727.7 seconds | Results: 90
 Base Episodes: 5 | Episode Variants: 10
 ================================================================================
 
@@ -13717,123 +13717,69 @@ Base Episodes: 5 | Episode Variants: 10
   Base Episodes: 5
   Episode Variants (with temperature): 10
   Total Evaluations: 90
-  Average Step Accuracy: 0.227 (22.7%)
-  Average Name-Index Accuracy: 0.245 (24.5%)
-  Episode Success Rate: 0.267 (26.7%)
-  Hallucination Rate: 0.011 (1.1%)
+  Average Step Accuracy: 0.200 (20.0%)
+  Average Name-Index Accuracy: 0.252 (25.2%)
+  Episode Success Rate: 0.411 (41.1%)
+  Hallucination Rate: 0.005 (0.5%)
   Average RL Reward: 16.2
   ✅ Met 10+ episode requirement via temperature variants!
 
 🏆 MODEL PERFORMANCE RANKING:
-  🥇 CLAUDE: 0.412 step accuracy, 0.420 name-index accuracy
-  🥈 OPENAI: 0.249 step accuracy, 0.290 name-index accuracy
-  🥉 MISTRAL: 0.022 step accuracy, 0.026 name-index accuracy
+  🥇 CLAUDE: 0.392 step accuracy, 0.401 name-index accuracy
+  🥈 OPENAI: 0.209 step accuracy, 0.354 name-index accuracy
+  🥉 MISTRAL: 0.000 step accuracy, 0.000 name-index accuracy
 
 📋 STRATEGY PERFORMANCE RANKING:
-  🥇 Self Reflect: 0.289 step accuracy, 0.280 name-index accuracy
-  🥈 Few Shot: 0.229 step accuracy, 0.279 name-index accuracy
-  🥉 Zero Shot: 0.164 step accuracy, 0.178 name-index accuracy
+  🥇 Self Reflect: 0.259 step accuracy, 0.310 name-index accuracy
+  🥈 Few Shot: 0.182 step accuracy, 0.234 name-index accuracy
+  🥉 Zero Shot: 0.160 step accuracy, 0.211 name-index accuracy
 
 🌡️ TEMPERATURE VARIANT ANALYSIS:
-  🥇 Deterministic: 0.233 step accuracy, 0.246 name-index accuracy
-      Episodes: 45 | Success: 0.311 | Halluc: 0.008
-  🥈 Balanced: 0.221 step accuracy, 0.245 name-index accuracy
-      Episodes: 45 | Success: 0.222 | Halluc: 0.015
+  🥇 Balanced: 0.216 step accuracy, 0.269 name-index accuracy
+      Episodes: 45 | Success: 0.444 | Halluc: 0.007
+  🥈 Deterministic: 0.185 step accuracy, 0.234 name-index accuracy
+      Episodes: 45 | Success: 0.378 | Halluc: 0.002
 
 ❌ FAILURE ANALYSIS:
-  Hallucinations: 17
-  Misinterpretations: 322
-  Name-Index Mismatches: 218
+  Hallucinations: 7
+  Misinterpretations: 255
+  Name-Index Mismatches: 160
   Parsing Errors: 30
-  Total Issues Detected: 587
+  Total Issues Detected: 452
 
 📈 LEARNING PROGRESSION:
-  Early Episodes Avg Reward: 16.8
-  Late Episodes Avg Reward: 15.6
-  Improvement: -1.3
+  Early Episodes Avg Reward: 17.3
+  Late Episodes Avg Reward: 15.1
+  Improvement: -2.2
   Learning Detected: ❌ No
 
 🧠 MEMORY SYSTEM INSIGHTS:
-  Name-Index Mappings Learned: 33
+  Name-Index Mappings Learned: 30
   Element Mappings Learned: 0
   Action History Entries: 900
 
   Top Name-Index Pairs:
-    • Show roots:1: 1.00 success rate (n=24)
-    • sdk_gphone64_arm64:8: 1.00 success rate (n=15)
-    • Display brightness:0: 1.00 success rate (n=13)
-    • Brightness level:4: 1.00 success rate (n=12)
-    • Shutter:2: 1.00 success rate (n=9)
+    • 1:3: 1.00 success rate (n=20)
+    • Show roots:1: 1.00 success rate (n=13)
+    • Create new contact:1: 1.00 success rate (n=12)
+    • Contacts:6: 1.00 success rate (n=11)
+    • sdk_gphone64_arm64:8: 1.00 success rate (n=11)
 
 ====================================================================================================
-Benchmark completed in 3603.4 seconds
+Benchmark completed in 2727.7 seconds
 ====================================================================================================
 
 📄 GENERATING OUTPUT FILES...
 ✅ Files Generated:
-  📄 JSON Report: evaluation_output/comprehensive_benchmark_20250806_121317.json
-  📊 CSV Summary: evaluation_output/benchmark_summary_20250806_121317.csv
-  📋 Markdown Report: evaluation_output/benchmark_report_20250806_121317.md
-
-🎮 GENERATING EMULATOR REPLAY FILES...
-💾 Saved replay data: ContactsAddContact_openai_zero_shot.json
-💾 Saved replay data: CameraTakePhoto_openai_zero_shot.json
-💾 Saved replay data: SystemBrightnessMax_openai_zero_shot.json
-💾 Saved replay data: FilesMoveFile_openai_zero_shot.json
-💾 Saved replay data: ClockTimerEntry_openai_zero_shot.json
-💾 Saved replay data: ContactsAddContact_openai_few_shot.json
-💾 Saved replay data: CameraTakePhoto_openai_few_shot.json
-💾 Saved replay data: SystemBrightnessMax_openai_few_shot.json
-💾 Saved replay data: FilesMoveFile_openai_few_shot.json
-💾 Saved replay data: ClockTimerEntry_openai_few_shot.json
-💾 Saved replay data: ContactsAddContact_openai_self_reflect.json
-💾 Saved replay data: CameraTakePhoto_openai_self_reflect.json
-💾 Saved replay data: SystemBrightnessMax_openai_self_reflect.json
-💾 Saved replay data: FilesMoveFile_openai_self_reflect.json
-💾 Saved replay data: ClockTimerEntry_openai_self_reflect.json
-💾 Saved replay data: ContactsAddContact_claude_zero_shot.json
-💾 Saved replay data: CameraTakePhoto_claude_zero_shot.json
-💾 Saved replay data: SystemBrightnessMax_claude_zero_shot.json
-💾 Saved replay data: FilesMoveFile_claude_zero_shot.json
-💾 Saved replay data: ClockTimerEntry_claude_zero_shot.json
-💾 Saved replay data: ContactsAddContact_claude_few_shot.json
-💾 Saved replay data: CameraTakePhoto_claude_few_shot.json
-💾 Saved replay data: SystemBrightnessMax_claude_few_shot.json
-💾 Saved replay data: FilesMoveFile_claude_few_shot.json
-💾 Saved replay data: ClockTimerEntry_claude_few_shot.json
-💾 Saved replay data: ContactsAddContact_claude_self_reflect.json
-💾 Saved replay data: CameraTakePhoto_claude_self_reflect.json
-💾 Saved replay data: SystemBrightnessMax_claude_self_reflect.json
-💾 Saved replay data: FilesMoveFile_claude_self_reflect.json
-💾 Saved replay data: ClockTimerEntry_claude_self_reflect.json
-💾 Saved replay data: ContactsAddContact_mistral_zero_shot.json
-💾 Saved replay data: CameraTakePhoto_mistral_zero_shot.json
-💾 Saved replay data: SystemBrightnessMax_mistral_zero_shot.json
-💾 Saved replay data: FilesMoveFile_mistral_zero_shot.json
-💾 Saved replay data: ClockTimerEntry_mistral_zero_shot.json
-💾 Saved replay data: ContactsAddContact_mistral_few_shot.json
-💾 Saved replay data: CameraTakePhoto_mistral_few_shot.json
-💾 Saved replay data: SystemBrightnessMax_mistral_few_shot.json
-💾 Saved replay data: FilesMoveFile_mistral_few_shot.json
-💾 Saved replay data: ClockTimerEntry_mistral_few_shot.json
-💾 Saved replay data: ContactsAddContact_mistral_self_reflect.json
-💾 Saved replay data: CameraTakePhoto_mistral_self_reflect.json
-💾 Saved replay data: SystemBrightnessMax_mistral_self_reflect.json
-💾 Saved replay data: FilesMoveFile_mistral_self_reflect.json
-💾 Saved replay data: ClockTimerEntry_mistral_self_reflect.json
-🎯 Emulator Integration:
-   Generated 45 replay files
-   Location: evaluation_output/emulator_replay_data/
-
-🚀 To test on emulator:
-   python emulator_run.py --json evaluation_output/emulator_replay_data/ContactsAddContact_openai_zero_shot.json --non-interactive
+  📄 JSON Report: evaluation_output/comprehensive_benchmark_20250806_135857.json
+  📊 CSV Summary: evaluation_output/benchmark_summary_20250806_135857.csv
 
 🎉 EVALUATION COMPLETE!
-   ⏱️ Total Duration: 3603.5 seconds
+   ⏱️ Total Duration: 2727.7 seconds
    📊 Base Episodes: 2
    🌡️ Episode Variants (with temperature): 10
    🔢 Total Evaluations: 90
    🤖 Models Tested: 3
    🌡️ Temperature Variants: 2 (Deterministic, Balanced)
-   🧠 Name-Index Mappings Learned: 33
+   🧠 Name-Index Mappings Learned: 30
    ✅ Met 10+ episode requirement via temperature variants!
