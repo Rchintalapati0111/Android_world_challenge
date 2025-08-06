@@ -5,7 +5,7 @@ Enhanced Android Agent with Name-Index Prediction, RL, and Comprehensive Benchma
 - Enhanced validation with element mapping
 - Comprehensive benchmarking with temperature variants (5 episodes × 2 temperatures = 10 variants)
 - Failure analysis and interesting behavior detection
-- Advanced visualization with Streamlit dashboard
+- Advanced visualization with Streamlit dashboard 
 - Memory buffer with full action/observation history
 
 Temperature Variants Strategy:
@@ -29,15 +29,32 @@ import glob
 import re
 import os
 import json
-import openai
-import anthropic
-from typing import List, Dict, Tuple, Optional
-from collections import defaultdict, deque
-from langchain.memory import ConversationBufferMemory
-from datetime import datetime
 import time
 import numpy as np
+from typing import List, Dict, Tuple, Optional
+from collections import defaultdict, deque
+from datetime import datetime
 from rapidfuzz import fuzz, process
+
+# API clients
+try:
+    import openai
+    OPENAI_AVAILABLE = True
+except ImportError:
+    OPENAI_AVAILABLE = False
+
+try:
+    import anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
+
+# LangChain for memory
+try:
+    from langchain.memory import ConversationBufferMemory
+    LANGCHAIN_AVAILABLE = True
+except ImportError:
+    LANGCHAIN_AVAILABLE = False
 
 # Optional imports for Streamlit (only needed if running dashboard)
 try:
@@ -131,11 +148,14 @@ class EnhancedRLMemorySystem:
     """Enhanced memory system with name-index pair tracking and full history buffer"""
     
     def __init__(self):
-        # LangChain memory for conversation tracking
-        self.conversation_memory = ConversationBufferMemory(
-            return_messages=True,
-            memory_key="chat_history"
-        )
+        # LangChain memory for conversation tracking (optional)
+        if LANGCHAIN_AVAILABLE:
+            self.conversation_memory = ConversationBufferMemory(
+                return_messages=True,
+                memory_key="chat_history"
+            )
+        else:
+            self.conversation_memory = None
         
         # Name-index specific tracking
         self.name_index_mappings = defaultdict(list)      # name -> [successful indices]
@@ -444,8 +464,8 @@ def create_name_index_performance_dashboard(results_data: List[Dict], memory_sys
     if not STREAMLIT_AVAILABLE:
         return
     
-    st.title(" Android Agent Performance Dashboard ")
-    st.markdown("Comprehensive analysis of agent performance with name-index pair accuracy")
+    st.title("🤖 Android Agent Performance Dashboard")
+    st.markdown("**Comprehensive analysis of agent performance with name-index pair accuracy**")
     
     # Enhanced metrics overview
     col1, col2, col3, col4, col5 = st.columns(5)
@@ -465,7 +485,7 @@ def create_name_index_performance_dashboard(results_data: List[Dict], memory_sys
     
     # Name-index accuracy over time
     if results_data:
-        st.subheader(" Learning Progress with Name-Index Tracking")
+        st.subheader("📈 Learning Progress with Name-Index Tracking")
         
         df = pd.DataFrame(results_data)
         df['episode_id'] = range(len(df))
@@ -478,7 +498,7 @@ def create_name_index_performance_dashboard(results_data: List[Dict], memory_sys
             y=df['step_accuracy'],
             mode='lines+markers',
             name='Step Accuracy',
-            line=dict(width=2)
+            line=dict(width=2, color='#1f77b4')
         ))
         
         # Name-index accuracy
@@ -488,7 +508,7 @@ def create_name_index_performance_dashboard(results_data: List[Dict], memory_sys
                 y=df['name_index_accuracy'],
                 mode='lines+markers',
                 name='Name-Index Accuracy',
-                line=dict(width=2)
+                line=dict(width=2, color='#ff7f0e')
             ))
         
         # Hallucination rate
@@ -497,14 +517,15 @@ def create_name_index_performance_dashboard(results_data: List[Dict], memory_sys
             y=df['hallucination_rate'],
             mode='lines+markers',
             name='Hallucination Rate',
-            line=dict(width=2)
+            line=dict(width=2, color='#d62728')
         ))
         
         fig.update_layout(
             title="Performance Trends with Name-Index Accuracy",
             xaxis_title="Episode Number",
             yaxis_title="Rate",
-            hovermode='x unified'
+            hovermode='x unified',
+            height=400
         )
         
         st.plotly_chart(fig, use_container_width=True)
@@ -514,7 +535,7 @@ def create_name_index_performance_dashboard(results_data: List[Dict], memory_sys
     
     with col1:
         if results_data and len(set(r['variant'] for r in results_data)) > 1:
-            st.subheader(" Prompt Variant Performance")
+            st.subheader("📊 Prompt Variant Performance")
             variant_perf = defaultdict(lambda: {'step_acc': [], 'name_index_acc': []})
             for result in results_data:
                 variant_perf[result['variant']]['step_acc'].append(result['step_accuracy'])
@@ -523,18 +544,19 @@ def create_name_index_performance_dashboard(results_data: List[Dict], memory_sys
             step_accuracies = [np.mean(variant_perf[v]['step_acc']) for v in variants]
             name_index_accuracies = [np.mean(variant_perf[v]['name_index_acc']) for v in variants]
             fig = go.Figure(data=[
-                go.Bar(name='Step Accuracy', x=variants, y=step_accuracies),
-                go.Bar(name='Name-Index Accuracy', x=variants, y=name_index_accuracies)
+                go.Bar(name='Step Accuracy', x=variants, y=step_accuracies, marker_color='#1f77b4'),
+                go.Bar(name='Name-Index Accuracy', x=variants, y=name_index_accuracies, marker_color='#ff7f0e')
             ])
             fig.update_layout(
                 title="Accuracy by Prompt Variant",
-                barmode='group'
+                barmode='group',
+                height=350
             )
             st.plotly_chart(fig, use_container_width=True)
     
     with col2:
         if results_data and len(set(r['model'] for r in results_data)) > 1:
-            st.subheader(" Model Performance Comparison")
+            st.subheader("🔬 Model Performance Comparison")
             model_perf = defaultdict(lambda: {'step_acc': [], 'name_index_acc': []})
             for result in results_data:
                 model_perf[result['model']]['step_acc'].append(result['step_accuracy'])
@@ -543,17 +565,18 @@ def create_name_index_performance_dashboard(results_data: List[Dict], memory_sys
             model_step_accuracies = [np.mean(model_perf[m]['step_acc']) for m in models]
             model_name_index_accuracies = [np.mean(model_perf[m]['name_index_acc']) for m in models]
             fig = go.Figure(data=[
-                go.Bar(name='Step Accuracy', x=models, y=model_step_accuracies),
-                go.Bar(name='Name-Index Accuracy', x=models, y=model_name_index_accuracies)
+                go.Bar(name='Step Accuracy', x=models, y=model_step_accuracies, marker_color='#2ca02c'),
+                go.Bar(name='Name-Index Accuracy', x=models, y=model_name_index_accuracies, marker_color='#d62728')
             ])
             fig.update_layout(
                 title="Accuracy by Model",
-                barmode='group'
+                barmode='group',
+                height=350
             )
             st.plotly_chart(fig, use_container_width=True)
     
     # Enhanced memory system insights
-    st.subheader(" Enhanced Memory System Insights")
+    st.subheader("🧠 Enhanced Memory System Insights")
     col1, col2, col3 = st.columns(3)
     with col1:
         st.write("**Top Name-Index Mappings:**")
@@ -590,7 +613,7 @@ def create_episode_progress_viewer_enhanced(episode_data: Dict, step_results: Li
     if not STREAMLIT_AVAILABLE:
         return
     
-    st.subheader(f" Episode Progress: {episode_data.get('goal', 'Unknown Goal')}")
+    st.subheader(f"🎯 Episode Progress: {episode_data.get('goal', 'Unknown Goal')}")
     col1, col2, col3, col4 = st.columns(4)
     col1.write(f"**Task:** {episode_data.get('task_full', 'Unknown')}")
     col2.write(f"**Model:** {episode_data.get('model', 'Unknown')}")
@@ -631,12 +654,13 @@ def create_episode_progress_viewer_enhanced(episode_data: Dict, step_results: Li
             elem_text = elem.get('label', f"element_{elem.get('index', i)}")
             elem_index = elem.get('index', i)
             if elem_index == target_index:
-                st.write(f" **[{elem_index}] {elem_text}** (TARGET)")
+                st.write(f"🎯 **[{elem_index}] {elem_text}** (TARGET)")
             else:
                 st.write(f"• [{elem_index}] {elem_text}")
         if len(ui_elements) > 12:
             st.write(f"... and {len(ui_elements) - 12} more")
     
+    # Progress visualization
     progress_data = []
     for i, step in enumerate(step_results):
         progress_data.append({
@@ -649,15 +673,16 @@ def create_episode_progress_viewer_enhanced(episode_data: Dict, step_results: Li
         })
     df = pd.DataFrame(progress_data)
     fig = go.Figure()
-    fig.add_trace(go.Bar(x=df['step'], y=df['exact_match'], name='Exact Match'))
-    fig.add_trace(go.Bar(x=df['step'], y=df['name_index_consistent'], name='Name-Index Consistent'))
-    fig.add_trace(go.Bar(x=df['step'], y=df['name_index_match'], name='Name-Index GT Match'))
-    fig.add_trace(go.Bar(x=df['step'], y=df['hallucination'], name='Hallucination'))
+    fig.add_trace(go.Bar(x=df['step'], y=df['exact_match'], name='Exact Match', marker_color='#2ca02c'))
+    fig.add_trace(go.Bar(x=df['step'], y=df['name_index_consistent'], name='Name-Index Consistent', marker_color='#1f77b4'))
+    fig.add_trace(go.Bar(x=df['step'], y=df['name_index_match'], name='Name-Index GT Match', marker_color='#ff7f0e'))
+    fig.add_trace(go.Bar(x=df['step'], y=df['hallucination'], name='Hallucination', marker_color='#d62728'))
     fig.update_layout(
         title="Step-by-Step Performance",
         xaxis_title="Step Number",
         yaxis_title="Success (1) / Failure (0)",
-        barmode='overlay'
+        barmode='overlay',
+        height=350
     )
     st.plotly_chart(fig, use_container_width=True)
 
@@ -693,12 +718,20 @@ class NameIndexRLEvaluator:
         
     def _call_openai(self, prompt: str, temperature: float = 0.0) -> Dict[str, any]:
         """Call OpenAI API with function calling"""
+        if not OPENAI_AVAILABLE:
+            return {
+                "action_type": "PARSE_ERROR",
+                "name": "",
+                "index": -1,
+                "reasoning": "OpenAI not available"
+            }
+            
         try:
             conversation_context = self._get_conversation_context()
             enhanced_prompt = prompt.replace("{conversation_context}", conversation_context)
             
-            openai.api_key = os.environ.get("OPENAI_API_KEY")
-            resp = openai.chat.completions.create(
+            client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+            resp = client.chat.completions.create(
                 model="gpt-4-0125-preview",
                 messages=[{
                     "role": "system", 
@@ -707,14 +740,17 @@ class NameIndexRLEvaluator:
                     "role": "user", 
                     "content": enhanced_prompt
                 }],
-                functions=[android_action_schema],
-                function_call={"name": android_action_schema["name"]},
+                tools=[{
+                    "type": "function",
+                    "function": android_action_schema
+                }],
+                tool_choice={"type": "function", "function": {"name": android_action_schema["name"]}},
                 temperature=temperature,
                 max_tokens=600,
             )
             
-            if resp.choices[0].message.function_call:
-                function_args = json.loads(resp.choices[0].message.function_call.arguments)
+            if resp.choices[0].message.tool_calls:
+                function_args = json.loads(resp.choices[0].message.tool_calls[0].function.arguments)
                 self._update_conversation_memory(enhanced_prompt, str(function_args))
                 return function_args
             else:
@@ -736,6 +772,14 @@ class NameIndexRLEvaluator:
     
     def _call_claude(self, prompt: str, temperature: float = 0.0) -> Dict[str, any]:
         """Call Claude API with function calling"""
+        if not ANTHROPIC_AVAILABLE:
+            return {
+                "action_type": "PARSE_ERROR",
+                "name": "",
+                "index": -1,
+                "reasoning": "Anthropic not available"
+            }
+            
         try:
             conversation_context = self._get_conversation_context()
             enhanced_prompt = prompt.replace("{conversation_context}", conversation_context)
@@ -839,17 +883,19 @@ class NameIndexRLEvaluator:
     def _get_conversation_context(self) -> str:
         """Get conversation context from memory"""
         conversation_context = ""
-        if self.memory_system.conversation_memory.chat_memory.messages:
-            recent_messages = self.memory_system.conversation_memory.chat_memory.messages[-4:]
-            conversation_context = "RECENT CONVERSATION:\n" + "\n".join([
-                f"{msg.type}: {msg.content[:100]}..." for msg in recent_messages
-            ])
+        if self.memory_system.conversation_memory and hasattr(self.memory_system.conversation_memory, 'chat_memory'):
+            if self.memory_system.conversation_memory.chat_memory.messages:
+                recent_messages = self.memory_system.conversation_memory.chat_memory.messages[-4:]
+                conversation_context = "RECENT CONVERSATION:\n" + "\n".join([
+                    f"{msg.type}: {msg.content[:100]}..." for msg in recent_messages
+                ])
         return conversation_context
     
     def _update_conversation_memory(self, prompt: str, response: str):
         """Update conversation memory"""
-        self.memory_system.conversation_memory.chat_memory.add_user_message(prompt[:200] + "...")
-        self.memory_system.conversation_memory.chat_memory.add_ai_message(response)
+        if self.memory_system.conversation_memory and hasattr(self.memory_system.conversation_memory, 'chat_memory'):
+            self.memory_system.conversation_memory.chat_memory.add_user_message(prompt[:200] + "...")
+            self.memory_system.conversation_memory.chat_memory.add_ai_message(response)
     
     def extract_action_with_name_index(self, response: Dict[str, any], variant: str) -> Tuple[Dict, bool, str]:
         """Extract action with name-index pair from function call response"""
@@ -1282,7 +1328,7 @@ class NameIndexRLEvaluator:
                 available.append(model_name)
         return available
     
-    # Helper methods (unchanged from original)
+    # Helper methods for loading and parsing episodes
     def load_episode(self, path: str) -> Optional[Dict]:
         """Load and parse android_world episode data"""
         try:
@@ -1359,8 +1405,8 @@ class NameIndexRLEvaluator:
 def run_comprehensive_benchmark(evaluator: NameIndexRLEvaluator, episode_paths: List[str]) -> Dict:
     """Run comprehensive benchmarking with temperature variants"""
     
-    print(f" COMPREHENSIVE ANDROID AGENT BENCHMARKING")
-    print(f"Episodes: {len(episode_paths)} | Prediction | Multi-Model | Full Analysis")
+    print(f"🚀 COMPREHENSIVE ANDROID AGENT BENCHMARKING")
+    print(f"Episodes: {len(episode_paths)} | Name-Index Prediction | Multi-Model | Full Analysis")
     print("=" * 100)
     
     if len(episode_paths) < 5:
@@ -1399,14 +1445,14 @@ def run_comprehensive_benchmark(evaluator: NameIndexRLEvaluator, episode_paths: 
         print(f"{'='*80}")
         
         for strategy_name in strategy_names:
-            print(f"\n Strategy: {strategy_name.replace('_', ' ').title()}")
+            print(f"\n📋 Strategy: {strategy_name.replace('_', ' ').title()}")
             print("-" * 60)
             
             for temp_variant in temperature_variants:
                 temp_value = temp_variant["temp"]
                 temp_name = temp_variant["name"]
                 
-                print(f"\n   Temperature Variant: {temp_name} (T={temp_value})")
+                print(f"\n   🌡️ Temperature Variant: {temp_name} (T={temp_value})")
                 print(f"   {temp_variant['description']}")
                 print("   " + "-" * 50)
                 
@@ -1465,6 +1511,7 @@ def generate_benchmark_report(evaluator: NameIndexRLEvaluator, duration: float) 
         "average_reward": np.mean([r['episode_reward'] for r in results])
     }
     
+    # Model performance analysis
     model_performance = defaultdict(lambda: {
         'episodes': 0, 'step_acc': [], 'name_index_acc': [], 
         'success': [], 'halluc': [], 'rewards': []
@@ -1490,6 +1537,7 @@ def generate_benchmark_report(evaluator: NameIndexRLEvaluator, duration: float) 
             'average_reward': np.mean(data['rewards'])
         }
     
+    # Strategy performance analysis
     strategy_performance = defaultdict(lambda: {
         'episodes': 0, 'step_acc': [], 'name_index_acc': [], 
         'success': [], 'halluc': [], 'rewards': []
@@ -1515,6 +1563,7 @@ def generate_benchmark_report(evaluator: NameIndexRLEvaluator, duration: float) 
             'average_reward': np.mean(data['rewards'])
         }
     
+    # Temperature performance analysis
     temp_performance = defaultdict(lambda: {
         'episodes': 0, 'step_acc': [], 'name_index_acc': [], 
         'success': [], 'halluc': [], 'rewards': []
@@ -1531,16 +1580,16 @@ def generate_benchmark_report(evaluator: NameIndexRLEvaluator, duration: float) 
     
     temp_summary = {}
     for temp_variant, data in temp_performance.items():
-
         temp_summary[temp_variant] = {
-        'episodes': data['episodes'],
-        'step_accuracy': np.mean(data['step_acc']),
-        'name_index_accuracy': np.mean(data['name_index_acc']),
-        'success_rate': np.mean(data['success']),
-        'hallucination_rate': np.mean(data['halluc']),
-        'average_reward': np.mean(data['rewards'])}
-
+            'episodes': data['episodes'],
+            'step_accuracy': np.mean(data['step_acc']),
+            'name_index_accuracy': np.mean(data['name_index_acc']),
+            'success_rate': np.mean(data['success']),
+            'hallucination_rate': np.mean(data['halluc']),
+            'average_reward': np.mean(data['rewards'])
+        }
     
+    # Failure analysis
     failure_analysis = {
         'total_hallucinations': len(evaluator.failure_analysis['hallucinations']),
         'total_misinterpretations': len(evaluator.failure_analysis['misinterpretations']),
@@ -1551,6 +1600,7 @@ def generate_benchmark_report(evaluator: NameIndexRLEvaluator, duration: float) 
         )])
     }
     
+    # Learning analysis
     learning_analysis = {}
     if len(memory.episode_rewards) >= 6:
         early_rewards = memory.episode_rewards[:len(memory.episode_rewards)//2]
@@ -1562,6 +1612,7 @@ def generate_benchmark_report(evaluator: NameIndexRLEvaluator, duration: float) 
             'learning_detected': np.mean(late_rewards) > np.mean(early_rewards)
         }
     
+    # Memory insights
     memory_insights = {
         'total_name_index_mappings': len(memory.name_index_mappings),
         'total_element_mappings': len(memory.ui_element_mappings),
@@ -1615,7 +1666,7 @@ def print_benchmark_summary(report: Dict):
     print(f"\n{'='*100}")
     print(f"{'COMPREHENSIVE BENCHMARK SUMMARY':^100}")
     print(f"{'='*100}")
-    print(f"\n OVERALL PERFORMANCE:")
+    print(f"\n📊 OVERALL PERFORMANCE:")
     print(f"  Base Episodes: {overall.get('base_episodes', 'N/A')}")
     print(f"  Episode Variants (with temperature): {overall.get('episode_variants', overall['total_episodes'])}")
     print(f"  Total Evaluations: {overall['total_episodes']}")
@@ -1626,29 +1677,33 @@ def print_benchmark_summary(report: Dict):
     print(f"  Average RL Reward: {overall['average_reward']:.1f}")
     if overall.get('episode_variants', 0) >= 10:
         print(f"  ✅ Met 10+ episode requirement via temperature variants!")
-    print(f"\n MODEL PERFORMANCE RANKING:")
+    
+    print(f"\n🏆 MODEL PERFORMANCE RANKING:")
     model_ranking = sorted(report['model_comparison'].items(), 
                           key=lambda x: x[1]['step_accuracy'], reverse=True)
     for i, (model, data) in enumerate(model_ranking):
         rank_emoji = ["🥇", "🥈", "🥉"][i] if i < 3 else f"{i+1}."
         print(f"  {rank_emoji} {model.upper()}: {data['step_accuracy']:.3f} step accuracy, {data['name_index_accuracy']:.3f} name-index accuracy")
-    print(f"\n STRATEGY PERFORMANCE RANKING:")
+    
+    print(f"\n📋 STRATEGY PERFORMANCE RANKING:")
     strategy_ranking = sorted(report['strategy_comparison'].items(), 
                              key=lambda x: x[1]['step_accuracy'], reverse=True)
     for i, (strategy, data) in enumerate(strategy_ranking):
         rank_emoji = ["🥇", "🥈", "🥉"][i] if i < 3 else f"{i+1}."
         strategy_name = strategy.replace('_', ' ').title()
         print(f"  {rank_emoji} {strategy_name}: {data['step_accuracy']:.3f} step accuracy, {data['name_index_accuracy']:.3f} name-index accuracy")
+    
     if 'temperature_analysis' in report:
-        print(f"\n TEMPERATURE VARIANT ANALYSIS:")
+        print(f"\n🌡️ TEMPERATURE VARIANT ANALYSIS:")
         temp_ranking = sorted(report['temperature_analysis'].items(), 
                              key=lambda x: x[1]['step_accuracy'], reverse=True)
         for i, (temp_variant, data) in enumerate(temp_ranking):
             rank_emoji = ["🥇", "🥈", "🥉"][i] if i < 3 else f"{i+1}."
             print(f"  {rank_emoji} {temp_variant}: {data['step_accuracy']:.3f} step accuracy, {data['name_index_accuracy']:.3f} name-index accuracy")
             print(f"      Episodes: {data['episodes']} | Success: {data['success_rate']:.3f} | Halluc: {data['hallucination_rate']:.3f}")
+    
     failures = report['failure_analysis']
-    print(f"\n FAILURE ANALYSIS:")
+    print(f"\n❌ FAILURE ANALYSIS:")
     print(f"  Hallucinations: {failures['total_hallucinations']}")
     print(f"  Misinterpretations: {failures['total_misinterpretations']}")
     print(f"  Name-Index Mismatches: {failures['total_name_index_mismatches']}")
@@ -1656,262 +1711,428 @@ def print_benchmark_summary(report: Dict):
     total_issues = sum(failures.values())
     if total_issues > 0:
         print(f"  Total Issues Detected: {total_issues}")
+    
     if 'learning_progression' in report and report['learning_progression']:
         learning = report['learning_progression']
-        print(f"\n LEARNING PROGRESSION:")
+        print(f"\n📈 LEARNING PROGRESSION:")
         print(f"  Early Episodes Avg Reward: {learning['early_average_reward']:.1f}")
         print(f"  Late Episodes Avg Reward: {learning['late_average_reward']:.1f}")
         print(f"  Improvement: {learning['improvement']:+.1f}")
         print(f"  Learning Detected: {'✅ Yes' if learning['learning_detected'] else '❌ No'}")
+    
     memory = report['memory_insights']
-    print(f"\n MEMORY SYSTEM INSIGHTS:")
+    print(f"\n🧠 MEMORY SYSTEM INSIGHTS:")
     print(f"  Name-Index Mappings Learned: {memory['total_name_index_mappings']}")
     print(f"  Element Mappings Learned: {memory['total_element_mappings']}")
     print(f"  Action History Entries: {memory['total_action_history_entries']}")
+    
     if memory['most_successful_name_index_pairs']:
         print(f"\n  Top Name-Index Pairs:")
         for pair_data in memory['most_successful_name_index_pairs'][:5]:
             print(f"    • {pair_data['pair']}: {pair_data['success_rate']:.2f} success rate (n={pair_data['frequency']})")
+    
     print(f"\n{'='*100}")
     print(f"Benchmark completed in {report['metadata']['duration_seconds']:.1f} seconds")
     print(f"{'='*100}")
 
+def save_results_for_emulator_replay(evaluator: NameIndexRLEvaluator, output_dir: str = "emulator_replay_data"):
+    """Save evaluation results in format compatible with emulator_run.py"""
+    
+    if not evaluator.results_data:
+        print("❌ No results to save for emulator replay")
+        return []
+    
+    os.makedirs(output_dir, exist_ok=True)
+    saved_files = []
+    
+    # Group results by episode and create replay files
+    episode_groups = defaultdict(list)
+    for result in evaluator.results_data:
+        episode_key = f"{result['task_full']}_{result['model']}_{result['variant']}"
+        episode_groups[episode_key].append(result)
+    
+    for episode_key, results in episode_groups.items():
+        # Take the best performing result for this episode
+        best_result = max(results, key=lambda x: x['step_accuracy'])
+        
+        # Convert to emulator replay format
+        replay_data = {
+            "task_name": best_result['task_category'],
+            "trial": "0", 
+            "goal": best_result['goal'],
+            "provider": best_result['model'],
+            "episode_path": best_result['episode'],
+            "created_at": datetime.now().isoformat(),
+            "steps": len(best_result['step_results']),
+            "actions": [step['predicted_action'] for step in best_result['step_results']],
+            "responses": [step['predicted_action_data'] for step in best_result['step_results']],
+            "step_records": best_result['step_results']
+        }
+        
+        # Save in emulator_run.py compatible format
+        filename = f"{episode_key}.json"
+        filepath = os.path.join(output_dir, filename)
+        
+        with open(filepath, 'w') as f:
+            json.dump(replay_data, f, indent=2, default=str)
+        
+        saved_files.append(filepath)
+        print(f"💾 Saved replay data: {filename}")
+    
+    return saved_files
 
-    def main_streamlit_app_enhanced():
-        """Enhanced Streamlit application with name-index prediction"""
+def create_emulator_integration_dashboard():
+    """Create Streamlit section for emulator integration"""
+    
+    if not STREAMLIT_AVAILABLE:
+        return
+    
+    st.subheader("🎮 Emulator Integration")
+    st.write("Test your best-performing predictions on a real Android emulator")
+    
+    # Check if results exist
+    if 'evaluator' not in st.session_state or not st.session_state.evaluator.results_data:
+        st.info("Run evaluations first to enable emulator testing")
+        return
+    
+    evaluator = st.session_state.evaluator
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.write("**📊 Available Results:**")
+        st.write(f"• Total evaluations: {len(evaluator.results_data)}")
+        st.write(f"• Best step accuracy: {max(r['step_accuracy'] for r in evaluator.results_data):.3f}")
+        st.write(f"• Episodes with results: {len(set(r['episode'] for r in evaluator.results_data))}")
+    
+    with col2:
+        st.write("**🎯 Emulator Options:**")
         
-        if not STREAMLIT_AVAILABLE:
-            print("❌ Streamlit not available. Install with: pip install streamlit plotly pandas")
-            print("Running CLI version instead...")
-            run_cli_evaluation_enhanced()
-            return
+        # Generate replay files button
+        if st.button("📁 Generate Emulator Replay Files"):
+            with st.spinner("Generating replay files..."):
+                saved_files = save_results_for_emulator_replay(evaluator)
+            
+            if saved_files:
+                st.success(f"✅ Generated {len(saved_files)} replay files")
+                st.write("**Generated files:**")
+                for file in saved_files:
+                    st.write(f"• {os.path.basename(file)}")
+                
+                # Provide emulator command examples
+                st.subheader("🚀 Run on Emulator")
+                st.write("Use these commands to test on your Android emulator:")
+                
+                example_file = os.path.basename(saved_files[0]) if saved_files else "example.json"
+                st.code(f"""# Basic emulator replay
+python emulator_run.py \\
+  --json emulator_replay_data/{example_file} \\
+  --adb ~/Library/Android/sdk/platform-tools \\
+  --non-interactive \\
+  --delay 2.0
+
+# Interactive mode with debugging
+python emulator_run.py \\
+  --json emulator_replay_data/{example_file} \\
+  --adb ~/Library/Android/sdk/platform-tools \\
+  --go-home-first \\
+  --force-start-app
+
+# Batch testing all files
+for file in emulator_replay_data/*.json; do
+  echo "Testing $file"
+  python emulator_run.py --json "$file" --non-interactive --delay 1.5
+done""")
+            else:
+                st.error("❌ Failed to generate replay files")
+
+def main_streamlit_app_enhanced():
+    """Enhanced Streamlit application with name-index prediction and emulator integration"""
+    
+    if not STREAMLIT_AVAILABLE:
+        print("❌ Streamlit not available. Install with: pip install streamlit plotly pandas")
+        print("Running CLI version instead...")
+        run_cli_evaluation_enhanced()
+        return
+    
+    st.set_page_config(
+        page_title="Android Agent Benchmarking",
+        page_icon="🤖",
+        layout="wide"
+    )
+    
+    # Initialize evaluator
+    if 'evaluator' not in st.session_state:
+        st.session_state.evaluator = NameIndexRLEvaluator()
+    
+    evaluator = st.session_state.evaluator
+    
+    # Enhanced sidebar controls
+    st.sidebar.title("🤖 Enhanced Evaluation Controls")
+    
+    # Episode directory selection
+    episode_dir = st.sidebar.text_input(
+        "📁 Episode Directory", 
+        value="runs/run_20250720T123202422603",
+        help="Directory containing .pkl.gz episode files"
+    )
+    
+    # Find episodes button
+    if st.sidebar.button("🔍 Find Episodes"):
+        if os.path.exists(episode_dir):
+            episodes = glob.glob(f"{episode_dir}/*.pkl.gz")
+            st.session_state.episodes = episodes
+            st.sidebar.success(f"Found {len(episodes)} episodes")
+        else:
+            st.sidebar.error("Directory not found")
+    
+    # Episode selection and settings
+    if 'episodes' in st.session_state:
+        # Episode selection
+        max_episodes = min(len(st.session_state.episodes), 15)  # Limit for performance
+        num_episodes = st.sidebar.slider("📊 Number of Episodes", 1, max_episodes, min(10, max_episodes))
         
-        st.set_page_config(
-            page_title="Android Agent Benchmarking",
-            page_icon="🤖",
-            layout="wide"
+        selected_episodes = st.session_state.episodes[:num_episodes]
+        
+        st.sidebar.write(f"Selected {len(selected_episodes)} episodes")
+        
+        # Model selection
+        available_models = evaluator.get_available_models()
+        if available_models:
+            selected_models = st.sidebar.multiselect(
+                "🤖 Select Models",
+                available_models,
+                default=available_models,
+                help="Models require API keys to be set as environment variables"
+            )
+        else:
+            st.sidebar.error("No API keys found! Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or MISTRALAI_API_KEY")
+            selected_models = []
+        
+        # Strategy selection
+        selected_variants = st.sidebar.multiselect(
+            "📋 Prompt Strategies",
+            list(evaluator.prompts.keys()),
+            default=list(evaluator.prompts.keys()),
+            help="Different prompting approaches for the agent"
         )
         
-        # Initialize evaluator
-        if 'evaluator' not in st.session_state:
-            st.session_state.evaluator = NameIndexRLEvaluator()
-        
-        evaluator = st.session_state.evaluator
-        
-        # Enhanced sidebar controls
-        st.sidebar.title(" Enhanced Evaluation Controls")
-        
-        # Episode directory selection
-        episode_dir = st.sidebar.text_input(
-            "Episode Directory", 
-            value="runs/run_20250720T123202422603"
+        # Temperature settings
+        use_temperature_variants = st.sidebar.checkbox(
+            "🌡️ Use Temperature Variants", 
+            value=True,
+            help="Test both deterministic (T=0.0) and balanced (T=0.5) settings"
         )
         
-        # Find episodes button
-        if st.sidebar.button(" Find Episodes"):
-            if os.path.exists(episode_dir):
-                episodes = glob.glob(f"{episode_dir}/*.pkl.gz")
-                st.session_state.episodes = episodes
-                st.sidebar.success(f"Found {len(episodes)} episodes")
-            else:
-                st.sidebar.error("Directory not found")
+        if not use_temperature_variants:
+            single_temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.0, 0.1)
         
-        # Episode selection and settings
-        if 'episodes' in st.session_state:
-            # Episode selection
-            max_episodes = min(len(st.session_state.episodes), 15)  # Limit for performance
-            num_episodes = st.sidebar.slider("Number of Episodes", 1, max_episodes, min(10, max_episodes))
-            
-            selected_episodes = st.session_state.episodes[:num_episodes]
-            
-            st.sidebar.write(f"Selected {len(selected_episodes)} episodes")
-            
-            # Model selection
-            available_models = evaluator.get_available_models()
-            if available_models:
-                selected_models = st.sidebar.multiselect(
-                    "Select Models",
-                    available_models,
-                    default=available_models
-                )
-            else:
-                st.sidebar.error("No API keys found! Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or MISTRALAI_API_KEY")
-                selected_models = []
-            
-            # Strategy selection
-            selected_variants = st.sidebar.multiselect(
-                "Prompt Strategies",
-                list(evaluator.prompts.keys()),
-                default=list(evaluator.prompts.keys())
-            )
-            
-            # Evaluation settings
-            temperature = st.sidebar.slider("Temperature", 0.0, 1.0, 0.0, 0.1)
-            
-            # Run types
-            evaluation_type = st.sidebar.selectbox(
-                "Evaluation Type",
-                ["Quick Test (5 episodes)", "Standard (10 episodes)", "Comprehensive (All selected)"]
-            )
-            
-            # Run evaluation buttons
-            col1, col2 = st.sidebar.columns(2)
-            
-            with col1:
-                if st.button(" Run Evaluation", type="primary") and selected_models:
-                    
-                    # Determine episode count based on type
-                    if evaluation_type == "Quick Test (5 episodes)":
-                        test_episodes = selected_episodes[:5]
-                    elif evaluation_type == "Standard (10 episodes)":
-                        test_episodes = selected_episodes[:10]
-                    else:
-                        test_episodes = selected_episodes
-                    
-                    progress_bar = st.progress(0)
-                    status_text = st.empty()
-                    
-                    total_evals = len(test_episodes) * len(selected_variants) * len(selected_models)
-                    current_eval = 0
-                    
-                    start_time = datetime.now()
-                    
-                    for model_name in selected_models:
-                        for variant in selected_variants:
+        # Evaluation settings
+        evaluation_type = st.sidebar.selectbox(
+            "📈 Evaluation Type",
+            ["Quick Test (5 episodes)", "Standard (10 episodes)", "Comprehensive (All selected)"]
+        )
+        
+        # Run evaluation buttons
+        col1, col2 = st.sidebar.columns(2)
+        
+        with col1:
+            if st.button("▶️ Run Evaluation", type="primary") and selected_models:
+                
+                # Determine episode count based on type
+                if evaluation_type == "Quick Test (5 episodes)":
+                    test_episodes = selected_episodes[:5]
+                elif evaluation_type == "Standard (10 episodes)":
+                    test_episodes = selected_episodes[:10]
+                else:
+                    test_episodes = selected_episodes
+                
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                # Determine temperature variants
+                if use_temperature_variants:
+                    temp_variants = [
+                        {"temp": 0.0, "name": "Deterministic"},
+                        {"temp": 0.5, "name": "Balanced"}
+                    ]
+                else:
+                    temp_variants = [{"temp": single_temperature, "name": f"T={single_temperature:.1f}"}]
+                
+                total_evals = len(test_episodes) * len(selected_variants) * len(selected_models) * len(temp_variants)
+                current_eval = 0
+                
+                start_time = datetime.now()
+                
+                for model_name in selected_models:
+                    for variant in selected_variants:
+                        for temp_variant in temp_variants:
+                            temp_value = temp_variant["temp"]
+                            temp_name = temp_variant["name"]
+                            
                             for ep_path in test_episodes:
                                 current_eval += 1
                                 progress = current_eval / total_evals
                                 
                                 episode_name = os.path.basename(ep_path)
-                                status_text.text(f"[{current_eval}/{total_evals}] Evaluating {episode_name} with {variant} ({model_name})...")
+                                status_text.text(f"[{current_eval}/{total_evals}] {episode_name} | {variant} | {model_name} | {temp_name}")
                                 progress_bar.progress(progress)
                                 
                                 try:
                                     result = evaluator.evaluate_episode_with_name_index(
-                                        ep_path, "streamlit_run", temperature, variant, model_name
+                                        ep_path, "streamlit_run", temp_value, variant, model_name
                                     )
                                     
                                     if result:
+                                        result['temperature_variant'] = temp_name
                                         evaluator.results_data.append(result)
                                 except Exception as e:
                                     st.error(f"Error evaluating episode: {e}")
-                    
-                    end_time = datetime.now()
-                    duration = (end_time - start_time).total_seconds()
-                    
-                    status_text.text(f"✅ Evaluation complete! ({duration:.1f}s)")
-                    st.sidebar.success(f"Completed {len(evaluator.results_data)} evaluations")
-            
-            with col2:
-                if st.button(" Generate Report") and evaluator.results_data:
-                    report = generate_benchmark_report(evaluator, 0)
-                    st.session_state.benchmark_report = report
-                    st.sidebar.success("Report generated!")
+                
+                end_time = datetime.now()
+                duration = (end_time - start_time).total_seconds()
+                
+                status_text.text(f"✅ Evaluation complete! ({duration:.1f}s)")
+                st.sidebar.success(f"Completed {len(evaluator.results_data)} evaluations")
         
-        # Main dashboard
-        if evaluator.results_data:
-            # Enhanced performance dashboard
-            create_name_index_performance_dashboard(evaluator.results_data, evaluator.memory_system)
-            
-            # Episode details
-            st.subheader("📱 Episode Details")
-            
-            # Episode selector with enhanced info
-            episode_options = [
-                f"{r['task_full'][:20]} ({r['model']}-{r['variant'][:8]}) - Step: {r['step_accuracy']:.3f}, NI: {r.get('name_index_accuracy', 0):.3f}"
-                for r in evaluator.results_data
-            ]
-            
-            selected_idx = st.selectbox("Select Episode for Details", range(len(episode_options)), 
-                                    format_func=lambda x: episode_options[x])
-            
-            if selected_idx is not None:
-                selected_result = evaluator.results_data[selected_idx]
-                create_episode_progress_viewer_enhanced(selected_result, selected_result['step_results'])
-            
-            # Enhanced download options
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                if st.button(" Download Results JSON"):
-                    results_json = json.dumps(evaluator.results_data, indent=2, default=str)
-                    st.download_button(
-                        "Download Results",
-                        results_json,
-                        "name_index_evaluation_results.json",
-                        "application/json"
-                    )
-            
-            with col2:
-                if st.button(" Download CSV Summary"):
-                    # Create CSV data
-                    csv_data = []
-                    for result in evaluator.results_data:
-                        csv_data.append({
-                            'Episode': os.path.basename(result['episode']),
-                            'Model': result['model'],
-                            'Strategy': result['variant'],
-                            'Task': result['task_category'],
-                            'Step_Accuracy': result['step_accuracy'],
-                            'Name_Index_Accuracy': result.get('name_index_accuracy', 0),
-                            'Episode_Success': result['episode_success'],
-                            'Hallucination_Rate': result['hallucination_rate'],
-                            'Reward': result['episode_reward']
-                        })
-                    
-                    df = pd.DataFrame(csv_data)
-                    csv_str = df.to_csv(index=False)
-                    
-                    st.download_button(
-                        "Download CSV",
-                        csv_str,
-                        "name_index_benchmark_summary.csv",
-                        "text/csv"
-                    )
-            
-            with col3:
-                if st.button(" Download Full Report") and 'benchmark_report' in st.session_state:
-                    report_json = json.dumps(st.session_state.benchmark_report, indent=2, default=str)
-                    st.download_button(
-                        "Download Report",
-                        report_json,
-                        "comprehensive_benchmark_report.json",
-                        "application/json"
-                    )
+        with col2:
+            if st.button("📊 Generate Report") and evaluator.results_data:
+                report = generate_benchmark_report(evaluator, 0)
+                st.session_state.benchmark_report = report
+                st.sidebar.success("Report generated!")
+    
+    # Main dashboard
+    if evaluator.results_data:
+        # Enhanced performance dashboard
+        create_name_index_performance_dashboard(evaluator.results_data, evaluator.memory_system)
         
-        else:
-            st.info("Use the sidebar to configure and run evaluations")
-            
-            # Show enhanced demo
-            st.subheader(" Android Agent Performance Demo")
-            st.write("This dashboard provides comprehensive analysis of Android agent performance with:")
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.write("""
-                **Core Features:**
-                - Name-index pair prediction accuracy
-                - Enhanced validation with element mapping
-                - Multi-model comparison (OpenAI, Claude, Mistral)
-                - Three prompting strategies
-                - Comprehensive failure analysis
-                """)
-            
-            with col2:
-                st.write("""
-                **Advanced Analysis:**
-                - Memory system with learned mappings
-                - Interesting behavior detection
-                - Learning progression tracking
-                - Real-time performance visualization
-                - Full benchmarking report generation
-                """)
+        # Episode details
+        st.subheader("📱 Episode Analysis")
+        
+        # Episode selector with enhanced info
+        episode_options = [
+            f"{r['task_full'][:20]} ({r['model']}-{r['variant'][:8]}) - Step: {r['step_accuracy']:.3f}, NI: {r.get('name_index_accuracy', 0):.3f}"
+            for r in evaluator.results_data
+        ]
+        
+        selected_idx = st.selectbox(
+            "Select Episode for Detailed Analysis", 
+            range(len(episode_options)), 
+            format_func=lambda x: episode_options[x]
+        )
+        
+        if selected_idx is not None:
+            selected_result = evaluator.results_data[selected_idx]
+            create_episode_progress_viewer_enhanced(selected_result, selected_result['step_results'])
+        
+        # Enhanced download options
+        st.subheader("📥 Export Results")
+        
+        # Add emulator integration section
+        create_emulator_integration_dashboard()
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("📄 Download Results JSON"):
+                results_json = json.dumps(evaluator.results_data, indent=2, default=str)
+                st.download_button(
+                    "Download Results",
+                    results_json,
+                    "name_index_evaluation_results.json",
+                    "application/json"
+                )
+        
+        with col2:
+            if st.button("📊 Download CSV Summary"):
+                # Create CSV data
+                csv_data = []
+                for result in evaluator.results_data:
+                    csv_data.append({
+                        'Episode': os.path.basename(result['episode']),
+                        'Model': result['model'],
+                        'Strategy': result['variant'],
+                        'Temperature_Variant': result.get('temperature_variant', f"T={result['temperature']:.1f}"),
+                        'Task': result['task_category'],
+                        'Step_Accuracy': result['step_accuracy'],
+                        'Name_Index_Accuracy': result.get('name_index_accuracy', 0),
+                        'Episode_Success': result['episode_success'],
+                        'Hallucination_Rate': result['hallucination_rate'],
+                        'Reward': result['episode_reward']
+                    })
+                
+                df = pd.DataFrame(csv_data)
+                csv_str = df.to_csv(index=False)
+                
+                st.download_button(
+                    "Download CSV",
+                    csv_str,
+                    "name_index_benchmark_summary.csv",
+                    "text/csv"
+                )
+        
+        with col3:
+            if st.button("📋 Download Full Report") and 'benchmark_report' in st.session_state:
+                report_json = json.dumps(st.session_state.benchmark_report, indent=2, default=str)
+                st.download_button(
+                    "Download Report",
+                    report_json,
+                    "comprehensive_benchmark_report.json",
+                    "application/json"
+                )
+    
+    else:
+        st.info("👆 Use the sidebar to configure and run evaluations")
+        
+        # Show enhanced demo
+        st.subheader("🤖 Android Agent Performance Analysis")
+        st.write("This dashboard provides comprehensive analysis of Android agent performance with:")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("""
+            **🎯 Core Features:**
+            - Name-index pair prediction accuracy
+            - Enhanced validation with element mapping  
+            - Multi-model comparison (OpenAI, Claude, Mistral)
+            - Multiple prompting strategies
+            - Temperature variant testing
+            - Comprehensive failure analysis
+            """)
+        
+        with col2:
+            st.write("""
+            **🧠 Advanced Analysis:**
+            - Memory system with learned mappings
+            - Interesting behavior detection
+            - Learning progression tracking
+            - Real-time performance visualization
+            - Full benchmarking report generation
+            - Export capabilities (JSON, CSV, Reports)
+            """)
+        
+        # API Key status
+        st.subheader("🔑 API Key Status")
+        api_keys = {
+            "OpenAI": "OPENAI_API_KEY",
+            "Anthropic": "ANTHROPIC_API_KEY", 
+            "Mistral": "MISTRALAI_API_KEY"
+        }
+        
+        for service, env_key in api_keys.items():
+            if os.environ.get(env_key):
+                st.success(f"✅ {service}: API key configured")
+            else:
+                st.error(f"❌ {service}: Missing {env_key}")
+        
+        if not any(os.environ.get(key) for key in api_keys.values()):
+            st.warning("⚠️ No API keys found. Set environment variables to enable model testing.")
 
 def run_cli_evaluation_enhanced():
     """Enhanced CLI version with comprehensive benchmarking"""
     
-    print(" ANDROID AGENT EVALUATION & BENCHMARKING")
+    print("🤖 ANDROID AGENT EVALUATION & BENCHMARKING")
     print("=" * 100)
     print("Features: Name-Index Prediction | Multi-Model | RL Memory | Comprehensive Analysis")
     print("=" * 100)
@@ -1922,7 +2143,7 @@ def run_cli_evaluation_enhanced():
     # Check available models
     available_models = evaluator.get_available_models()
     
-    print(f"\n Model API Status:")
+    print(f"\n🔑 Model API Status:")
     all_models = ["openai", "claude", "mistral"]
     for model in all_models:
         if model in available_models:
@@ -1942,7 +2163,7 @@ def run_cli_evaluation_enhanced():
         print("  export MISTRALAI_API_KEY='your_key'")
         return
     
-    print(f"\n Testing {len(available_models)} model(s): {', '.join(available_models).upper()}")
+    print(f"\n🧪 Testing {len(available_models)} model(s): {', '.join(available_models).upper()}")
     
     # Find episodes
     episode_dir = "runs/run_20250720T123202422603"
@@ -1951,7 +2172,7 @@ def run_cli_evaluation_enhanced():
         return
     
     episodes = glob.glob(f"{episode_dir}/*.pkl.gz")
-    print(f" Found {len(episodes)} episodes in {episode_dir}")
+    print(f"📁 Found {len(episodes)} episodes in {episode_dir}")
     
     if len(episodes) < 5:
         print(f"❌ ERROR: Need at least 5 episodes, found {len(episodes)}")
@@ -1966,7 +2187,7 @@ def run_cli_evaluation_enhanced():
     
     # Generate output files
     if benchmark_report:
-        print(f"\n GENERATING OUTPUT FILES...")
+        print(f"\n📄 GENERATING OUTPUT FILES...")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_dir = "evaluation_output"
@@ -2011,33 +2232,37 @@ def run_cli_evaluation_enhanced():
             f.write(generate_markdown_report(benchmark_report))
         
         print(f"✅ Files Generated:")
-        print(f"  JSON Report: {json_file}")
-        print(f"  CSV Summary: {csv_file}")
-        print(f"  Markdown Report: {md_file}")
+        print(f"  📄 JSON Report: {json_file}")
+        print(f"  📊 CSV Summary: {csv_file}")
+        print(f"  📋 Markdown Report: {md_file}")
+        
+        # Generate emulator replay files
+        print(f"\n🎮 GENERATING EMULATOR REPLAY FILES...")
+        replay_files = save_results_for_emulator_replay(evaluator, os.path.join(output_dir, "emulator_replay_data"))
+        
+        if replay_files:
+            print(f"🎯 Emulator Integration:")
+            print(f"   Generated {len(replay_files)} replay files")
+            print(f"   Location: {output_dir}/emulator_replay_data/")
+            print(f"\n🚀 To test on emulator:")
+            example_file = os.path.basename(replay_files[0])
+            print(f"   python emulator_run.py --json {output_dir}/emulator_replay_data/{example_file} --non-interactive")
+        else:
+            print("⚠️  No emulator replay files generated")
     
     total_duration = (end_time - start_time).total_seconds()
     
-    print(f"\n EVALUATION COMPLETE!")
-    print(f"   Total Duration: {total_duration:.1f} seconds")
-    print(f"   Base Episodes: {len(set(os.path.basename(r['episode']) for r in evaluator.results_data)) // 2}")  # Divide by 2 temp variants
-    print(
-    "   Episode Variants (with temperature): "
-    + str(
-        len(
-            {
-                f"{os.path.basename(r['episode'])}_{r['temperature']}"
-                for r in evaluator.results_data
-            }
-        )
-    )
-)
-
-    print(f"   Total Evaluations: {len(evaluator.results_data)}")
-    print(f"   Models Tested: {len(available_models)}")
-    print(f"   Temperature Variants: 2 (Deterministic, Balanced)")
-    print(f"   Name-Index Mappings Learned: {len(evaluator.memory_system.name_index_mappings)}")
+    print(f"\n🎉 EVALUATION COMPLETE!")
+    print(f"   ⏱️ Total Duration: {total_duration:.1f} seconds")
+    print(f"   📊 Base Episodes: {len(set(os.path.basename(r['episode']) for r in evaluator.results_data)) // 2}")  # Divide by 2 temp variants
+    episode_variants_count = len({f"{os.path.basename(r['episode'])}_{r['temperature']}" for r in evaluator.results_data})
+    print(f"   🌡️ Episode Variants (with temperature): {episode_variants_count}")
+    print(f"   🔢 Total Evaluations: {len(evaluator.results_data)}")
+    print(f"   🤖 Models Tested: {len(available_models)}")
+    print(f"   🌡️ Temperature Variants: 2 (Deterministic, Balanced)")
+    print(f"   🧠 Name-Index Mappings Learned: {len(evaluator.memory_system.name_index_mappings)}")
     print(f"   ✅ Met 10+ episode requirement via temperature variants!")
-    print(f"")
+    print("")
 
 def generate_markdown_report(benchmark_report: Dict) -> str:
     """Generate markdown report from benchmark results"""
@@ -2093,7 +2318,7 @@ def generate_markdown_report(benchmark_report: Dict) -> str:
         strategy_name = strategy.replace('_', ' ').title()
         md += f"| {rank} | {strategy_name} | {data['step_accuracy']:.3f} | {data['name_index_accuracy']:.3f} | {data['success_rate']:.3f} |\n"
     
-    # Temperature analysis (NEW)
+    # Temperature analysis
     if 'temperature_analysis' in benchmark_report:
         md += f"""
 ## Temperature Variant Analysis
@@ -2211,11 +2436,11 @@ if __name__ == "__main__":
             print("❌ Streamlit not available. Install with:")
             print("   pip install streamlit plotly pandas")
             print("\nRunning CLI version instead...")
-            evaluator = run_cli_evaluation_enhanced()
+            run_cli_evaluation_enhanced()
     elif "--benchmark" in sys.argv:
-        evaluator = run_cli_evaluation_enhanced()
+        run_cli_evaluation_enhanced()
     elif "--cli" in sys.argv or len(sys.argv) == 1:
-        evaluator = run_cli_evaluation_enhanced()
+        run_cli_evaluation_enhanced()
     else:
         print("Usage:")
         print("  python enhanced_evaluation.py           # Run CLI evaluation")
