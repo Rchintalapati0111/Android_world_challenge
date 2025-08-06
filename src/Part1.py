@@ -4,21 +4,16 @@ import gzip
 import pickle
 import os
 from typing import List, Dict, Any
+from datetime import datetime
+from pathlib import Path
 
 from openai import OpenAI
 import anthropic
-# For Mistral, we'll use OpenAI client with custom base URL
 
 # ─── AUTHENTICATION SETUP ─────────────────────────────────────────────────────
-# Set your API keys as environment variables:
 # export OPENAI_API_KEY="your-openai-key"
-# export ANTHROPIC_API_KEY="your-anthropic-key" 
+# export ANTHROPIC_API_KEY="your-anthropic-key"
 # export MISTRALAI_API_KEY="your-mistral-key"
-
-# Or set them directly in code (not recommended for production):
-# os.environ["OPENAI_API_KEY"] = "your-openai-key"
-# os.environ["ANTHROPIC_API_KEY"] = "your-anthropic-key"
-# os.environ["MISTRALAI_API_KEY"] = "your-mistral-key"
 
 # ─── 1. REAL DATA LOADER ───────────────────────────────────────────────────────
 def load_real_episode(episode_path: str) -> Dict[str, Any]:
@@ -43,6 +38,31 @@ def extract_ui_elements_with_indices(episode_data: Dict) -> List[List[Dict[str, 
         indexed_steps.append(step_elements)
     return indexed_steps
 
+# ─── HELPERS ──────────────────────────────────────────────────────────────────
+def infer_task_from_path(episode_path: str) -> Dict[str, str]:
+    """
+    Best-effort task/trial inference from filename like 'CameraTakePhoto_0.pkl.gz'
+    """
+    name = Path(episode_path).name
+    stem = name.replace(".pkl.gz", "").replace(".pkl", "")
+    parts = stem.split("_")
+    if len(parts) >= 2:
+        return {"task_name": parts[0], "trial": parts[1]}
+    return {"task_name": stem, "trial": ""}
+
+def iso_now() -> str:
+    return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def ensure_out_dir(path: str) -> str:
+    Path(path).mkdir(parents=True, exist_ok=True)
+    return path
+
+def save_rollout_json(out_path: str, payload: Dict[str, Any]) -> None:
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+    print(f"🧾 Saved: {out_path}")
+
 # ─── PROMPT CONSTRUCTION ──────────────────────────────────────────────────────
 def build_prompt(goal: str, step_elements: List[Dict[str, Any]], history: List[str]) -> str:
     ui_text = "\n".join([
@@ -50,8 +70,6 @@ def build_prompt(goal: str, step_elements: List[Dict[str, Any]], history: List[s
         for el in step_elements
     ])
     history_text = "\n".join(history) if history else "None"
-    
-    # Full prompt with rules (sent to AI)
     return f"""Goal: {goal}
 
 Here is the current screen's list of visible UI elements (each element has a label and index):
@@ -74,14 +92,11 @@ Rules:
 Use "action_type": "STATUS" with "target": "complete" when the goal is fully achieved."""
 
 def build_display_prompt(goal: str, step_elements: List[Dict[str, Any]], history: List[str]) -> str:
-    """Version of prompt for console display (without rules)"""
     ui_text = "\n".join([
         f"[{el['index']}] {el['label']} (clickable)" if el["clickable"] else f"[{el['index']}] {el['label']}"
         for el in step_elements
     ])
     history_text = "\n".join(history) if history else "None"
-    
-    # Display version without rules
     return f"""Goal: {goal}
 
 Here is the current screen's list of visible UI elements (each element has a label and index):
@@ -90,7 +105,7 @@ Here is the current screen's list of visible UI elements (each element has a lab
 Previous Actions:
 {history_text}"""
 
-# ─── FUNCTION SCHEMA FOR TOOL CALLING ─────────────────────────────────────────
+# ─── FUNCTION SCHEMA ──────────────────────────────────────────────────────────
 android_action_schema = {
     "name": "android_action",
     "description": "Selects the next Android UI action to move toward the goal.",
@@ -123,16 +138,13 @@ android_action_schema = {
     }
 }
 
-# ─── JSON EXTRACTION FALLBACK (Fixed Regex) ──────────────────────────────────
+# ─── JSON EXTRACTION FALLBACK ─────────────────────────────────────────────────
 def safe_extract_json(text: str) -> Dict[str, Any]:
-    """Extract JSON from text with proper Python regex"""
-    # Look for JSON objects in the text
     patterns = [
-        r'\{[^{}]*\}',  # Simple single-level JSON
-        r'\{[^{}]*\{[^{}]*\}[^{}]*\}',  # Nested JSON (basic)
-        r'\{.*?\}',  # Greedy match
+        r'\{[^{}]*\}',
+        r'\{[^{}]*\{[^{}]*\}[^{}]*\}',
+        r'\{.*?\}',
     ]
-    
     for pattern in patterns:
         matches = re.findall(pattern, text, re.DOTALL)
         for match in matches:
@@ -140,14 +152,11 @@ def safe_extract_json(text: str) -> Dict[str, Any]:
                 return json.loads(match)
             except json.JSONDecodeError:
                 continue
-    
-    # Fallback if no valid JSON found
     return {"action_type": "STATUS", "target": "complete", "reasoning": "fallback due to parse failure"}
 
 # ─── CALL MODEL WRAPPER ───────────────────────────────────────────────────────
 def call_model(provider: str, messages: List[Dict], function_schema: Dict) -> Dict[str, Any]:
     if provider.lower() == "openai":
-        # Initialize with API key from environment
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         response = client.chat.completions.create(
             model="gpt-4-1106-preview",
@@ -158,26 +167,21 @@ def call_model(provider: str, messages: List[Dict], function_schema: Dict) -> Di
         return json.loads(response.choices[0].message.function_call.arguments)
 
     elif provider.lower() == "anthropic":
-        # Initialize with API key from environment
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-        
-        # Extract system message and user messages separately
         system_message = None
         user_messages = []
-        
         for msg in messages:
             if msg["role"] == "system":
                 system_message = msg["content"]
             else:
                 user_messages.append(msg)
-        
         msg = client.messages.create(
             model="claude-3-haiku-20240307",
-            system=system_message,  # Pass system message separately
-            messages=user_messages,  # Only user/assistant messages
+            system=system_message,
+            messages=user_messages,
             tools=[{
-                "name": function_schema["name"], 
-                "description": function_schema["description"], 
+                "name": function_schema["name"],
+                "description": function_schema["description"],
                 "input_schema": function_schema["parameters"]
             }],
             tool_choice={"type": "tool", "name": function_schema["name"]},
@@ -186,12 +190,10 @@ def call_model(provider: str, messages: List[Dict], function_schema: Dict) -> Di
         return msg.content[0].input
 
     elif provider.lower() == "mistral":
-        # Use OpenAI client with Mistral API endpoint (they're compatible)
         client = OpenAI(
             api_key=os.getenv("MISTRALAI_API_KEY"),
             base_url="https://api.mistral.ai/v1"
         )
-        
         response = client.chat.completions.create(
             model="mistral-large-latest",
             messages=messages,
@@ -201,76 +203,102 @@ def call_model(provider: str, messages: List[Dict], function_schema: Dict) -> Di
             }],
             tool_choice="auto"
         )
-        
-        # Parse response (same as OpenAI format)
-        if (response.choices and 
-            len(response.choices) > 0 and 
+        if (response.choices and
+            len(response.choices) > 0 and
             response.choices[0].message.tool_calls):
-            
             tool_call = response.choices[0].message.tool_calls[0]
             return json.loads(tool_call.function.arguments)
         else:
-            # Fallback to content parsing
             content = response.choices[0].message.content or ""
             return safe_extract_json(content)
-
     else:
         raise ValueError(f"Unsupported provider: {provider}")
 
-# ─── AGENT LOOP ───────────────────────────────────────────────────────────────
+# ─── AGENT LOOP (NOW RETURNS DATA TO SAVE) ────────────────────────────────────
 def run_real_agent(goal: str, ui_steps: List[List[Dict[str, Any]]], provider: str, max_steps: int = 5):
-    history = []
+    history: List[str] = []
+    actions: List[str] = []
+    responses: List[Dict[str, Any]] = []
+    step_records: List[Dict[str, Any]] = []
+
     print(f"\n{'='*60}\nRUNNING {provider.upper()} AGENT\nGoal: {goal}\n{'='*60}")
 
     for step in range(min(max_steps, len(ui_steps))):
         step_elements = ui_steps[step]
-        
-        # Use full prompt for AI model
+
         full_prompt = build_prompt(goal, step_elements, history)
-        
-        # Use display prompt for console (without rules)
         display_prompt = build_display_prompt(goal, step_elements, history)
-        
         messages = [
             {"role": "system", "content": "You are an Android UI automation agent."},
             {"role": "user", "content": full_prompt}
         ]
-        
+
         print(f"\n--- Step {step+1} ---\n{display_prompt}")
 
         try:
             response = call_model(provider, messages, android_action_schema)
             print(f"Response: {response}")
-            action_str = f'{response["action_type"]}({response.get("name", "")}, index={response.get("index", -1)})'
+            # Build a readable action string
+            action_str = f'{response.get("action_type")}' \
+                         f'({response.get("name","")}, index={response.get("index", -1)})'
+            # Append collections
             history.append(action_str)
-            if response["action_type"] == "STATUS" and response.get("target") == "complete":
+            actions.append(action_str)
+            responses.append(response)
+
+            # Per-step record (nice for later analysis)
+            step_records.append({
+                "step": step + 1,
+                "ui_elements": step_elements,     # already JSON-serializable
+                "display_prompt": display_prompt,
+                "full_prompt": full_prompt,
+                "response": response,
+                "action_str": action_str
+            })
+
+            # Stop if STATUS complete
+            if response.get("action_type") == "STATUS" and response.get("target") == "complete":
                 print("\n✅ Goal Completed\n")
                 break
+
         except Exception as e:
             print(f"❌ Error during model call: {e}")
             history.append("STATUS(complete)")
+            actions.append("STATUS(complete)")
+            responses.append({"action_type": "STATUS", "target": "complete", "error": str(e)})
+            step_records.append({
+                "step": step + 1,
+                "ui_elements": step_elements,
+                "display_prompt": display_prompt,
+                "full_prompt": full_prompt,
+                "response": {"action_type": "STATUS", "target": "complete", "error": str(e)},
+                "action_str": "STATUS(complete)"
+            })
             break
 
-    return history
+    return {
+        "actions": actions,
+        "responses": responses,
+        "step_records": step_records,
+        "steps": len(step_records),
+        "provider": provider
+    }
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 def main():
-    # Check for API keys and determine available providers
+    # Detect available providers by API keys
     api_keys = {
         "OPENAI_API_KEY": ("OpenAI", "openai"),
-        "ANTHROPIC_API_KEY": ("Anthropic", "anthropic"), 
+        "ANTHROPIC_API_KEY": ("Anthropic", "anthropic"),
         "MISTRALAI_API_KEY": ("Mistral AI", "mistral")
     }
-    
     available_providers = []
     missing_keys = []
-    
     for key, (provider_name, provider_code) in api_keys.items():
         if os.getenv(key):
             available_providers.append(provider_code)
         else:
             missing_keys.append(f"{key} (for {provider_name})")
-    
     if missing_keys:
         print("⚠️  Missing API keys:")
         for key in missing_keys:
@@ -281,7 +309,10 @@ def main():
             print("Example: export OPENAI_API_KEY='your-key-here'")
             return
 
+    # Inputs (you can make these argparse if you want)
     episode_path = "runs/run_20250720T123202422603/CameraTakePhoto_0.pkl.gz"
+    out_dir = ensure_out_dir("runs/llm_results")  # where JSONs will be saved
+
     if not os.path.exists(episode_path):
         print(f"❌ Episode file not found: {episode_path}")
         return
@@ -289,13 +320,35 @@ def main():
     episode_data = load_real_episode(episode_path)
     ui_steps = extract_ui_elements_with_indices(episode_data)
     goal = "Take a photo using the camera app"
+    meta = infer_task_from_path(episode_path)
+    task_name = meta["task_name"]
+    trial = meta["trial"]
 
     print(f" Loaded real Android episode with {len(ui_steps)} UI steps")
     print(f" Goal: {goal}")
     print(f" Available providers: {', '.join(available_providers)}")
 
     for provider in available_providers:
-        run_real_agent(goal, ui_steps, provider)
+        result = run_real_agent(goal, ui_steps, provider)
+
+        # Build a single JSON payload per provider
+        payload = {
+            "task_name": task_name,
+            "trial": trial,
+            "goal": goal,
+            "provider": provider,
+            "episode_path": episode_path,
+            "created_at": iso_now(),
+            "steps": result["steps"],
+            "actions": result["actions"],
+            "responses": result["responses"],        # raw dict outputs from the LLM/tool call
+            "step_records": result["step_records"]   # detailed per-step info
+        }
+
+        # Save file like: runs/llm_rollouts/CameraTakePhoto_0__openai.json
+        filename = f"{task_name}_{trial}__{provider}.json" if trial else f"{task_name}__{provider}.json"
+        out_path = str(Path(out_dir) / filename)
+        save_rollout_json(out_path, payload)
 
 if __name__ == "__main__":
     main()
