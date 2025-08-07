@@ -1,18 +1,54 @@
 # Android World LLM Agent Evaluation
 
-Lightweight framework for evaluating LLMs (OpenAI GPT-4, Anthropic Claude, Mistral) as agents navigating Android UI tasks using the `android_world` benchmark. Supports multi-strategy prompting (zero-shot, few-shot, self-reflection), memory-enhanced name-index reasoning, structured function calling, and temperature variants.
+This project provides a comprehensive framework for evaluating Android UI automation agents using multiple prompting strategies, reinforcement learning (RL) memory, and name-index prediction accuracy. It supports OpenAI, Anthropic (Claude), and Mistral models via function calling, and it generates detailed JSON rollouts for emulator replay.
 
 ## Features
 
-- Episode loader for Android UI goals (e.g., take photo, move file, add contact).  
-- Prompting strategies: Zero-shot, Few-shot (adaptive examples), Self-reflection.  
-- Enhanced memory: name-index mappings, failure patterns, goal strategies.  
-- Function-calling / structured outputs to reduce parsing errors.  
-- Multi-model support: OpenAI, Anthropic/Claude, Mistral.  
-- Evaluation metrics: step accuracy, semantic/name-index accuracy, hallucination detection, episode success, RL-style reward.  
-- Temperature variants (deterministic vs balanced) for robustness.  
-- Report generation (Markdown/JSON) with failure analysis and illustrative examples.
+Multi-Model Support: OpenAI (gpt-4), Anthropic (Claude), Mistral via OpenAI-compatible endpoint.
 
+## Prompting Strategies:
+
+Zero-Shot
+
+Few-Shot
+
+Self-Reflection
+
+## Reinforcement Learning Memory:
+
+Records action success patterns
+
+Name-index mapping suggestions
+
+Goal strategy learning
+
+## Name-Index Prediction:
+
+Precise selection of UI elements by name and index
+
+Fuzzy matching for semantic accuracy
+
+## JSON Rollout Generation:
+
+Saves detailed per-step records
+
+Compatible with scripts/emulator_run.py for replay
+
+## Comprehensive Benchmarking:
+
+Temperature variants (deterministic vs. balanced)
+
+Step/semantic accuracy, hallucination rates, RL rewards
+
+Failure analysis and learning progression
+
+Dashboard Visualization (Streamlit + Plotly)
+
+Performance trends over episodes
+
+Memory system insights
+
+android-agent-evaluation/
 ├── enhanced_evaluation.py     # CLI entrypoint for benchmarking
 ├── name_index_evaluator.py   # Name-index RL evaluator module
 ├── scripts/
@@ -20,11 +56,11 @@ Lightweight framework for evaluating LLMs (OpenAI GPT-4, Anthropic Claude, Mistr
 ├── runs/
 │   ├── llm_results/          # JSON outputs from CLI evaluations
 │   ├── llm_rollouts_v2/      # Rollouts from RL-enhanced evaluator
-│   └── run_/      # Original AndroidWorld episode files
+│   └── run_TIMESTAMP/        # Original AndroidWorld episode files
 ├── evaluation_output/
-│   ├── comprehensive_benchmark_.json
-│   └── benchmark_summary_.csv
-└──
+│   ├── comprehensive_benchmark_TIMESTAMP.json
+│   └── benchmark_summary_TIMESTAMP.csv
+└── README.md
 
 
 ## Prerequisites
