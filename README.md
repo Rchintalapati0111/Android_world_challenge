@@ -8,59 +8,45 @@ Multi-Model Support: OpenAI (gpt-4), Anthropic (Claude), Mistral via OpenAI-comp
 
 ## Prompting Strategies:
 
-Zero-Shot
+1. Zero-Shot
 
-Few-Shot
+2. Few-Shot
 
-Self-Reflection
+3. Self-Reflection
 
 ## Reinforcement Learning Memory:
 
-Records action success patterns
+1. Records action success patterns
 
-Name-index mapping suggestions
+2. Name-index mapping suggestions
 
-Goal strategy learning
+3. Goal strategy learning
 
 ## Name-Index Prediction:
 
-Precise selection of UI elements by name and index
+1. Precise selection of UI elements by name and index
 
-Fuzzy matching for semantic accuracy
+2. Fuzzy matching for semantic accuracy
 
 ## JSON Rollout Generation:
 
-Saves detailed per-step records
+1. Saves detailed per-step records
 
-Compatible with scripts/emulator_run.py for replay
+2. Compatible with scripts/emulator_run.py for replay
 
 ## Comprehensive Benchmarking:
 
-Temperature variants (deterministic vs. balanced)
+1. Temperature variants (deterministic vs. balanced)
 
-Step/semantic accuracy, hallucination rates, RL rewards
+2. Step/semantic accuracy, hallucination rates, RL rewards
 
-Failure analysis and learning progression
+3. Failure analysis and learning progression
 
-Dashboard Visualization (Streamlit + Plotly)
+4. Dashboard Visualization (Streamlit + Plotly)
 
-Performance trends over episodes
+5. Performance trends over episodes
 
-Memory system insights
-
-android-agent-evaluation/
-├── enhanced_evaluation.py     # CLI entrypoint for benchmarking
-├── name_index_evaluator.py   # Name-index RL evaluator module
-├── scripts/
-│   └── emulator_run.py       # Replays JSON rollouts on Android emulator
-├── runs/
-│   ├── llm_results/          # JSON outputs from CLI evaluations
-│   ├── llm_rollouts_v2/      # Rollouts from RL-enhanced evaluator
-│   └── run_TIMESTAMP/        # Original AndroidWorld episode files
-├── evaluation_output/
-│   ├── comprehensive_benchmark_TIMESTAMP.json
-│   └── benchmark_summary_TIMESTAMP.csv
-└── README.md
+6. Memory system insights
 
 
 ## Prerequisites
