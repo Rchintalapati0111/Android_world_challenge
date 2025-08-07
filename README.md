@@ -13,7 +13,7 @@ Lightweight framework for evaluating LLMs (OpenAI GPT-4, Anthropic Claude, Mistr
 - Temperature variants (deterministic vs balanced) for robustness.  
 - Report generation (Markdown/JSON) with failure analysis and illustrative examples.
 
-├── enhanced_evaluation.py     # CLI entry point for benchmarking
+├── enhanced_evaluation.py     # CLI entrypoint for benchmarking
 ├── name_index_evaluator.py   # Name-index RL evaluator module
 ├── scripts/
 │   └── emulator_run.py       # Replays JSON rollouts on Android emulator
@@ -24,7 +24,7 @@ Lightweight framework for evaluating LLMs (OpenAI GPT-4, Anthropic Claude, Mistr
 ├── evaluation_output/
 │   ├── comprehensive_benchmark_.json
 │   └── benchmark_summary_.csv
-└── README.md
+└──
 
 
 ## Prerequisites
