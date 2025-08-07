@@ -5,8 +5,9 @@ Enhanced Android Agent with Name-Index Prediction, RL, and Comprehensive Benchma
 - Enhanced validation with element mapping
 - Comprehensive benchmarking with temperature variants (5 episodes × 2 temperatures = 10 variants)
 - Failure analysis and interesting behavior detection
-- Advanced visualization with Streamlit dashboard 
+- Advanced visualization with Streamlit dashboard (no emulator dependencies)
 - Memory buffer with full action/observation history
+- SIMPLIFIED: All models use OpenAI-compatible interface (including Mistral via OpenAI-compatible endpoints)
 
 Temperature Variants Strategy:
 - Deterministic (T=0.0): Consistent, reliable responses
@@ -66,12 +67,15 @@ try:
 except ImportError:
     STREAMLIT_AVAILABLE = False
 
-# ===== NEW HELPER FUNCTIONS FOR REFINED ACCURACY =====
+# ===== HELPER FUNCTIONS FOR NAME-INDEX PREDICTION ACCURACY =====
 
 def resolve_ground_truth_name_index(truth_action: str, ui_elements: List[Dict]) -> Tuple[str, int]:
     """
     From a ground truth like CLICK("element_2"), resolve to actual label and index using the UI tree.
     Returns (label, index). If unresolvable, returns ("", -1).
+    
+    This is a core component for accurate evaluation - it converts ground truth element references
+    to actual UI element names and indices for proper comparison.
     """
     m = re.search(r'CLICK\("element_(\d+)"\)', truth_action)
     if not m:
@@ -85,7 +89,14 @@ def resolve_ground_truth_name_index(truth_action: str, ui_elements: List[Dict]) 
 def is_name_index_match(action_data: Dict, truth_action: str, ui_elements: List[Dict], name_threshold: int = 80) -> bool:
     """
     Compare predicted action's name/index against resolved ground-truth name/index.
-    True if action type matches, index equals the ground truth index, and fuzzy name similarity passes threshold.
+    
+    This implements the sophisticated name-index accuracy calculation that validates:
+    1. Action type matches ground truth
+    2. Predicted index is within valid range  
+    3. The predicted name has ≥80% fuzzy similarity with actual element at that index
+    
+    This is more sophisticated than simple string matching and ensures the agent
+    can accurately target UI elements for automation.
     """
     pred_type = action_data.get("action_type", "")
     truth_type_match = re.match(r'(\w+)\(', truth_action)
@@ -100,18 +111,22 @@ def is_name_index_match(action_data: Dict, truth_action: str, ui_elements: List[
     pred_name = action_data.get("name", "")
     pred_index = action_data.get("index", -1)
 
-    if truth_index != pred_index:
+    # Validate index is within valid range
+    if truth_index != pred_index or pred_index < 0 or pred_index >= len(ui_elements):
         return False
+    
     if not truth_name or not pred_name:
         return False
+    
+    # Semantic matching with ≥80% fuzzy similarity
     similarity = fuzz.ratio(truth_name.lower(), pred_name.lower())
     return similarity >= name_threshold
 
-# ===== NAME-INDEX PREDICTION SCHEMA =====
+# ===== NAME-INDEX PREDICTION SCHEMA FOR STRUCTURED FUNCTION CALLING =====
 
 android_action_schema = {
     "name": "android_action",
-    "description": "Selects the next Android UI action with precise name-index targeting.",
+    "description": "Selects the next Android UI action with precise name-index targeting. LLMs respond using structured function calling with this predefined schema that requires action_type, name, index, and reasoning.",
     "parameters": {
         "type": "object",
         "properties": {
@@ -122,11 +137,11 @@ android_action_schema = {
             },
             "name": {
                 "type": "string", 
-                "description": "Exact label/name of the UI element as shown in the UI tree"
+                "description": "Exact label/name of the UI element as shown in the UI tree - must match the actual element text"
             },
             "index": {
                 "type": "integer",
-                "description": "Index number of the element in the UI tree (critical for accuracy)"
+                "description": "Index number of the element in the UI tree (critical for accuracy) - must be valid position"
             },
             "target": {
                 "type": "string",
@@ -135,7 +150,7 @@ android_action_schema = {
             },
             "reasoning": {
                 "type": "string",
-                "description": "Why this name-index pair helps achieve the goal"
+                "description": "Why this name-index pair helps achieve the goal and how it was selected from the UI tree"
             }
         },
         "required": ["action_type", "reasoning"]
@@ -355,7 +370,7 @@ You are an Android UI automation agent with name-index prediction capabilities.
 
 {conversation_context}
 
-Current screen's UI element tree with indices:
+Current screen's UI element tree with indices (UI elements are extracted from Android World episodes as structured data and converted to human-readable text format):
 {obs}
 
 CRITICAL NAME-INDEX PREDICTION REQUIREMENTS:
@@ -364,8 +379,9 @@ CRITICAL NAME-INDEX PREDICTION REQUIREMENTS:
 3. Verify the name matches what appears at that index in the UI tree
 4. Your success depends on precise name-index pair accuracy
 
-Example response format:
-{{"action_type": "CLICK", "name": "Camera", "index": 2, "reasoning": "Clicking Camera at index 2 to open camera app"}}
+The UI elements above are extracted from Android World episodes as structured data (text, content_description, index, clickable status) and converted to human-readable text format like "[0] Home, [1] Phone (clickable), [2] Camera (clickable)".
+
+You must respond using structured function calling with the predefined schema that requires action_type, name, index, and reasoning.
 
 Available actions with name-index requirements:
 - CLICK: Requires exact name and index from UI tree
@@ -405,7 +421,7 @@ Result: ✅ SUCCESS - Verified "Phone" exists at index 2
 
 {history}
 
-Current UI element tree with indices:
+Current UI element tree with indices (extracted from Android World episodes as structured data):
 {obs}
 
 NAME-INDEX PREDICTION STRATEGY:
@@ -426,7 +442,7 @@ Goal: {goal}
 
 {history}
 
-Current UI element tree with indices:
+Current UI element tree with indices (extracted from Android World episodes as structured data):
 {obs}
 
 SELF-REFLECTION WITH NAME-INDEX PREDICTION:
@@ -456,236 +472,6 @@ Please work through each reflection step, then provide your final action with ex
 
 Action: """
 
-# ===== ENHANCED VISUALIZATION COMPONENTS =====
-
-def create_name_index_performance_dashboard(results_data: List[Dict], memory_system: EnhancedRLMemorySystem):
-    """Create enhanced dashboard with name-index performance metrics"""
-    
-    if not STREAMLIT_AVAILABLE:
-        return
-    
-    st.title("🤖 Android Agent Performance Dashboard")
-    st.markdown("**Comprehensive analysis of agent performance with name-index pair accuracy**")
-    
-    # Enhanced metrics overview
-    col1, col2, col3, col4, col5 = st.columns(5)
-    
-    if results_data:
-        avg_step_acc = np.mean([r['step_accuracy'] for r in results_data])
-        name_index_acc = np.mean([r.get('name_index_accuracy', 0) for r in results_data])
-        success_rate = np.mean([r['episode_success'] for r in results_data])
-        avg_halluc = np.mean([r['hallucination_rate'] for r in results_data])
-        total_episodes = len(results_data)
-        
-        col1.metric("Step Accuracy", f"{avg_step_acc:.3f}", f"{(avg_step_acc - 0.5):+.3f}")
-        col2.metric("Name-Index Accuracy", f"{name_index_acc:.3f}", f"{(name_index_acc - 0.4):+.3f}")
-        col3.metric("Episode Success Rate", f"{success_rate:.3f}", f"{(success_rate - 0.3):+.3f}")
-        col4.metric("Hallucination Rate", f"{avg_halluc:.3f}", f"{(0.1 - avg_halluc):+.3f}")
-        col5.metric("Episodes Completed", total_episodes)
-    
-    # Name-index accuracy over time
-    if results_data:
-        st.subheader("📈 Learning Progress with Name-Index Tracking")
-        
-        df = pd.DataFrame(results_data)
-        df['episode_id'] = range(len(df))
-        
-        fig = go.Figure()
-        
-        # Step accuracy
-        fig.add_trace(go.Scatter(
-            x=df['episode_id'],
-            y=df['step_accuracy'],
-            mode='lines+markers',
-            name='Step Accuracy',
-            line=dict(width=2, color='#1f77b4')
-        ))
-        
-        # Name-index accuracy
-        if 'name_index_accuracy' in df.columns:
-            fig.add_trace(go.Scatter(
-                x=df['episode_id'],
-                y=df['name_index_accuracy'],
-                mode='lines+markers',
-                name='Name-Index Accuracy',
-                line=dict(width=2, color='#ff7f0e')
-            ))
-        
-        # Hallucination rate
-        fig.add_trace(go.Scatter(
-            x=df['episode_id'],
-            y=df['hallucination_rate'],
-            mode='lines+markers',
-            name='Hallucination Rate',
-            line=dict(width=2, color='#d62728')
-        ))
-        
-        fig.update_layout(
-            title="Performance Trends with Name-Index Accuracy",
-            xaxis_title="Episode Number",
-            yaxis_title="Rate",
-            hovermode='x unified',
-            height=400
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
-    
-    # Model and prompt comparison
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        if results_data and len(set(r['variant'] for r in results_data)) > 1:
-            st.subheader("📊 Prompt Variant Performance")
-            variant_perf = defaultdict(lambda: {'step_acc': [], 'name_index_acc': []})
-            for result in results_data:
-                variant_perf[result['variant']]['step_acc'].append(result['step_accuracy'])
-                variant_perf[result['variant']]['name_index_acc'].append(result.get('name_index_accuracy', 0))
-            variants = list(variant_perf.keys())
-            step_accuracies = [np.mean(variant_perf[v]['step_acc']) for v in variants]
-            name_index_accuracies = [np.mean(variant_perf[v]['name_index_acc']) for v in variants]
-            fig = go.Figure(data=[
-                go.Bar(name='Step Accuracy', x=variants, y=step_accuracies, marker_color='#1f77b4'),
-                go.Bar(name='Name-Index Accuracy', x=variants, y=name_index_accuracies, marker_color='#ff7f0e')
-            ])
-            fig.update_layout(
-                title="Accuracy by Prompt Variant",
-                barmode='group',
-                height=350
-            )
-            st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        if results_data and len(set(r['model'] for r in results_data)) > 1:
-            st.subheader("🔬 Model Performance Comparison")
-            model_perf = defaultdict(lambda: {'step_acc': [], 'name_index_acc': []})
-            for result in results_data:
-                model_perf[result['model']]['step_acc'].append(result['step_accuracy'])
-                model_perf[result['model']]['name_index_acc'].append(result.get('name_index_accuracy', 0))
-            models = list(model_perf.keys())
-            model_step_accuracies = [np.mean(model_perf[m]['step_acc']) for m in models]
-            model_name_index_accuracies = [np.mean(model_perf[m]['name_index_acc']) for m in models]
-            fig = go.Figure(data=[
-                go.Bar(name='Step Accuracy', x=models, y=model_step_accuracies, marker_color='#2ca02c'),
-                go.Bar(name='Name-Index Accuracy', x=models, y=model_name_index_accuracies, marker_color='#d62728')
-            ])
-            fig.update_layout(
-                title="Accuracy by Model",
-                barmode='group',
-                height=350
-            )
-            st.plotly_chart(fig, use_container_width=True)
-    
-    # Enhanced memory system insights
-    st.subheader("🧠 Enhanced Memory System Insights")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.write("**Top Name-Index Mappings:**")
-        if memory_system.name_index_mappings:
-            for name, indices in list(memory_system.name_index_mappings.items())[:8]:
-                if indices:
-                    most_common_index = max(set(indices), key=indices.count)
-                    frequency = len(indices)
-                    success_rate = indices.count(most_common_index) / len(indices)
-                    st.write(f"• `{name}` → index `{most_common_index}` ({success_rate:.1%}, n={frequency})")
-        else:
-            st.write("No mappings learned yet")
-    with col2:
-        st.write("**Element Mappings Learned:**")
-        if memory_system.ui_element_mappings:
-            for semantic, elements in list(memory_system.ui_element_mappings.items())[:8]:
-                st.write(f"• `{semantic}` → `{list(elements)}`")
-        else:
-            st.write("No mappings learned yet")
-    with col3:
-        st.write("**Interesting Behaviors Detected:**")
-        st.write(f"• Hallucinations: {len(memory_system.hallucination_examples)}")
-        st.write(f"• Misinterpretations: {len(memory_system.misinterpretation_examples)}")
-        st.write(f"• UI Reasoning Failures: {len(memory_system.ui_reasoning_failures)}")
-        total_behaviors = (len(memory_system.hallucination_examples) + 
-                          len(memory_system.misinterpretation_examples) + 
-                          len(memory_system.ui_reasoning_failures))
-        if total_behaviors > 0:
-            st.write(f"• **Total Issues: {total_behaviors}**")
-
-def create_episode_progress_viewer_enhanced(episode_data: Dict, step_results: List[Dict]):
-    """Create enhanced episode progress viewer with name-index details"""
-    
-    if not STREAMLIT_AVAILABLE:
-        return
-    
-    st.subheader(f"🎯 Episode Progress: {episode_data.get('goal', 'Unknown Goal')}")
-    col1, col2, col3, col4 = st.columns(4)
-    col1.write(f"**Task:** {episode_data.get('task_full', 'Unknown')}")
-    col2.write(f"**Model:** {episode_data.get('model', 'Unknown')}")
-    col3.write(f"**Variant:** {episode_data.get('variant', 'Unknown')}")
-    col4.write(f"**Steps:** {len(step_results)}")
-    
-    step_selector = st.slider("Select Step", 1, len(step_results), 1)
-    selected_step = step_results[step_selector - 1]
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write("**Predicted Action:**")
-        predicted_action = selected_step.get('predicted_action_data', {})
-        if predicted_action:
-            st.json({
-                "action_type": predicted_action.get('action_type', ''),
-                "name": predicted_action.get('name', ''),
-                "index": predicted_action.get('index', -1),
-                "reasoning": predicted_action.get('reasoning', '')
-            })
-        else:
-            st.code(selected_step.get('predicted_action', 'N/A'))
-        st.write("**Ground Truth:**")
-        st.code(selected_step['ground_truth'])
-        exact_match = "✅ Exact Match" if selected_step.get('exact_match', False) else "❌ No Match"
-        name_index_consistency = "✅ Consistent" if selected_step.get('name_index_consistent', False) else "❌ Inconsistent"
-        name_index_ground_truth = "✅ Matches GT" if selected_step.get('name_index_match', False) else "❌ GT Mismatch"
-        halluc_status = "❌ Hallucination" if selected_step.get('is_hallucination', False) else "✅ Valid"
-        st.write(f"**Status:** {exact_match} | {name_index_consistency} | {name_index_ground_truth} | {halluc_status}")
-        confidence = selected_step.get('confidence', 0.5)
-        reward = selected_step.get('reward', 0)
-        st.write(f"**Confidence:** {confidence:.2f} | **Reward:** {reward:+.1f}")
-    with col2:
-        st.write("**UI Elements Available:**")
-        ui_elements = selected_step.get('ui_elements', [])
-        target_index = predicted_action.get('index', -1) if predicted_action else -1
-        for i, elem in enumerate(ui_elements[:12]):
-            elem_text = elem.get('label', f"element_{elem.get('index', i)}")
-            elem_index = elem.get('index', i)
-            if elem_index == target_index:
-                st.write(f"🎯 **[{elem_index}] {elem_text}** (TARGET)")
-            else:
-                st.write(f"• [{elem_index}] {elem_text}")
-        if len(ui_elements) > 12:
-            st.write(f"... and {len(ui_elements) - 12} more")
-    
-    # Progress visualization
-    progress_data = []
-    for i, step in enumerate(step_results):
-        progress_data.append({
-            'step': i + 1,
-            'exact_match': 1 if step.get('exact_match', False) else 0,
-            'name_index_consistent': 1 if step.get('name_index_consistent', False) else 0,
-            'name_index_match': 1 if step.get('name_index_match', False) else 0,
-            'hallucination': 1 if step.get('is_hallucination', False) else 0,
-            'reward': step.get('reward', 0)
-        })
-    df = pd.DataFrame(progress_data)
-    fig = go.Figure()
-    fig.add_trace(go.Bar(x=df['step'], y=df['exact_match'], name='Exact Match', marker_color='#2ca02c'))
-    fig.add_trace(go.Bar(x=df['step'], y=df['name_index_consistent'], name='Name-Index Consistent', marker_color='#1f77b4'))
-    fig.add_trace(go.Bar(x=df['step'], y=df['name_index_match'], name='Name-Index GT Match', marker_color='#ff7f0e'))
-    fig.add_trace(go.Bar(x=df['step'], y=df['hallucination'], name='Hallucination', marker_color='#d62728'))
-    fig.update_layout(
-        title="Step-by-Step Performance",
-        xaxis_title="Step Number",
-        yaxis_title="Success (1) / Failure (0)",
-        barmode='overlay',
-        height=350
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
 # ===== ENHANCED EVALUATION ENGINE WITH NAME-INDEX PREDICTION =====
 
 class NameIndexRLEvaluator:
@@ -700,11 +486,11 @@ class NameIndexRLEvaluator:
             "self_reflect": SELF_REFLECTION,
         }
         
-        # Multi-model support
+        # Multi-model support - all using OpenAI-compatible interface
         self.models = {
             "openai": self._call_openai,
             "claude": self._call_claude,
-            "mistral": self._call_mistral
+            "mistral": self._call_mistral_via_openai
         }
         
         # Benchmarking metrics
@@ -826,22 +612,43 @@ class NameIndexRLEvaluator:
                 "reasoning": f"Claude API call failed: {e}"
             }
     
-    def _call_mistral(self, prompt: str, temperature: float = 0.0) -> Dict[str, any]:
-        """Call Mistral AI API with function calling"""
+    def _call_mistral_via_openai(self, prompt: str, temperature: float = 0.0) -> Dict[str, any]:
+        """Call Mistral via OpenAI-compatible interface"""
+        if not OPENAI_AVAILABLE:
+            return {
+                "action_type": "PARSE_ERROR",
+                "name": "",
+                "index": -1,
+                "reasoning": "OpenAI package not available for Mistral interface"
+            }
+            
         try:
             conversation_context = self._get_conversation_context()
             enhanced_prompt = prompt.replace("{conversation_context}", conversation_context)
             
+            # Check for Mistral API key and base URL
+            mistral_api_key = os.environ.get("MISTRAL_API_KEY")
+            mistral_base_url = os.environ.get("MISTRAL_BASE_URL", "https://api.mistral.ai/v1")
+            
+            if not mistral_api_key:
+                return {
+                    "action_type": "PARSE_ERROR",
+                    "name": "",
+                    "index": -1,
+                    "reasoning": "MISTRAL_API_KEY not found"
+                }
+            
+            # Use OpenAI client with Mistral's OpenAI-compatible endpoint
             client = openai.OpenAI(
-                api_key=os.environ.get("MISTRALAI_API_KEY"),
-                base_url="https://api.mistral.ai/v1"
+                api_key=mistral_api_key,
+                base_url=mistral_base_url
             )
             
-            response = client.chat.completions.create(
-                model="mistral-large-latest",
+            resp = client.chat.completions.create(
+                model="mistral-large-latest",  # or "mistral-medium", "mistral-small"
                 messages=[{
-                    "role": "system",
-                    "content": "You are an Android UI automation agent with name-index prediction capabilities. Use the provided function to give structured responses."
+                    "role": "system", 
+                    "content": "You are an Android UI automation agent with name-index prediction capabilities. Use function calling to provide structured responses."
                 }, {
                     "role": "user", 
                     "content": enhanced_prompt
@@ -850,17 +657,13 @@ class NameIndexRLEvaluator:
                     "type": "function",
                     "function": android_action_schema
                 }],
-                tool_choice="auto",
+                tool_choice={"type": "function", "function": {"name": android_action_schema["name"]}},
                 temperature=temperature,
-                max_tokens=600
+                max_tokens=600,
             )
             
-            if (response.choices and 
-                len(response.choices) > 0 and 
-                response.choices[0].message.tool_calls):
-                
-                tool_call = response.choices[0].message.tool_calls[0]
-                function_args = json.loads(tool_call.function.arguments)
+            if resp.choices[0].message.tool_calls:
+                function_args = json.loads(resp.choices[0].message.tool_calls[0].function.arguments)
                 self._update_conversation_memory(enhanced_prompt, str(function_args))
                 return function_args
             else:
@@ -872,7 +675,7 @@ class NameIndexRLEvaluator:
                 }
             
         except Exception as e:
-            print(f"Mistral API error: {e}")
+            print(f"Mistral (via OpenAI interface) API error: {e}")
             return {
                 "action_type": "PARSE_ERROR",
                 "name": "",
@@ -936,30 +739,6 @@ class NameIndexRLEvaluator:
             "index": -1,
             "reasoning": "Could not extract valid action from response"
         }, False, "Extraction failed"
-    
-    def _parse_action_string_to_dict(self, action_string: str) -> Dict:
-        """Parse action string to dictionary format"""
-        json_match = re.search(r'\{[^}]*\}', action_string)
-        if json_match:
-            try:
-                return json.loads(json_match.group(0))
-            except json.JSONDecodeError:
-                pass
-        if "CLICK(" in action_string:
-            name_match = re.search(r'CLICK\("([^"]+)"\)', action_string)
-            name = name_match.group(1) if name_match else ""
-            return {
-                "action_type": "CLICK",
-                "name": name,
-                "index": -1,
-                "reasoning": "Parsed from string"
-            }
-        return {
-            "action_type": "PARSE_ERROR",
-            "name": "",
-            "index": -1,
-            "reasoning": "Could not parse string"
-        }
     
     def evaluate_episode_with_name_index(self, ep_path: str, run_id: str, 
                                         temperature: float, variant_name: str, model_name: str) -> Optional[Dict]:
@@ -1263,11 +1042,14 @@ class NameIndexRLEvaluator:
         return "No learned patterns available yet. Focus on precise name-index prediction."
     
     def summarize_ui_with_indices(self, ui_list) -> str:
-        """Convert UI element list to readable tree format with indices"""
+        """Convert UI element list to readable tree format with indices - implements the structured data conversion mentioned in the requirements"""
         if not ui_list:
             return "No UI elements found"
         
         tree_lines = ["UI Element Tree with Indices:", "=" * 40]
+        tree_lines.append("(UI elements extracted from Android World episodes as structured data)")
+        tree_lines.append("(text, content_description, index, clickable status converted to readable format)")
+        tree_lines.append("")
         
         for item in ui_list:
             if hasattr(item, '__dict__'):
@@ -1318,14 +1100,19 @@ class NameIndexRLEvaluator:
     def get_available_models(self) -> List[str]:
         """Get list of available models based on API keys"""
         available = []
-        api_keys = {
-            "openai": "OPENAI_API_KEY",
-            "claude": "ANTHROPIC_API_KEY", 
-            "mistral": "MISTRALAI_API_KEY"
-        }
-        for model_name, env_key in api_keys.items():
-            if os.environ.get(env_key):
-                available.append(model_name)
+        
+        # Check OpenAI
+        if os.environ.get("OPENAI_API_KEY"):
+            available.append("openai")
+        
+        # Check Claude/Anthropic
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            available.append("claude")
+        
+        # Check Mistral (via OpenAI-compatible interface)
+        if os.environ.get("MISTRAL_API_KEY"):
+            available.append("mistral")
+        
         return available
     
     # Helper methods for loading and parsing episodes
@@ -1400,7 +1187,304 @@ class NameIndexRLEvaluator:
         task_category = task_category.group(1) if task_category else "Unknown"
         return task_category, task_full
 
-# ===== COMPREHENSIVE BENCHMARKING FUNCTIONS =====
+    def extract_rollouts_from_results(self, output_dir: str = "extracted_rollouts") -> List[str]:
+        """Extract individual rollout JSON files from current evaluation results."""
+        
+        print(f"🎬 Extracting rollouts from {len(self.results_data)} evaluation results...")
+        
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
+        
+        generated_files = []
+        
+        for i, result in enumerate(self.results_data):
+            try:
+                # Extract episode info
+                episode_path = result.get('episode', '')
+                episode_name = os.path.basename(episode_path).replace('.pkl.gz', '').replace('_0', '')
+                
+                model = result.get('model', 'unknown')
+                variant = result.get('variant', 'unknown')
+                temperature = result.get('temperature', 0.0)
+                temp_variant = result.get('temperature_variant', f'T{temperature:.1f}')
+                goal = result.get('goal', '')
+                
+                # Convert predictions to emulator-compatible format
+                predictions = result.get('predictions', [])
+                responses = []
+                actions = []
+                
+                for prediction in predictions:
+                    # Convert to emulator format
+                    action_dict = {
+                        "action_type": prediction.get('action_type', '').lower(),
+                    }
+                    
+                    # Add type-specific fields
+                    action_type = prediction.get('action_type', '').lower()
+                    
+                    if action_type == "click":
+                        action_dict["index"] = prediction.get('index', 0)
+                        
+                    elif action_type == "open_app":
+                        action_dict["app_name"] = prediction.get('name', '')
+                        
+                    elif action_type == "input_text":
+                        action_dict["text"] = prediction.get('name', '')
+                        if prediction.get('index', -1) >= 0:
+                            action_dict["index"] = prediction.get('index')
+                            
+                    elif action_type == "scroll":
+                        action_dict["direction"] = prediction.get('name', 'down')
+                        
+                    elif action_type == "status":
+                        action_dict["goal_status"] = prediction.get('target', 'complete')
+                    
+                    # Add to both formats for compatibility
+                    responses.append(action_dict)
+                    
+                    # Also create action string format
+                    reasoning = prediction.get('reasoning', '')
+                    action_json = json.dumps(action_dict)
+                    action_string = f"Reason: {reasoning}\nAction: {action_json}"
+                    actions.append(action_string)
+                
+                # Create rollout data structure
+                rollout_data = {
+                    "task_name": episode_name,
+                    "goal": goal,
+                    "model": model,
+                    "provider": model,
+                    "variant": variant,
+                    "temperature": temperature,
+                    "temperature_variant": temp_variant,
+                    "step_accuracy": result.get('step_accuracy', 0.0),
+                    "name_index_accuracy": result.get('name_index_accuracy', 0.0),
+                    "episode_success": result.get('episode_success', False),
+                    "total_steps": len(responses),
+                    "responses": responses,  # Structured format (preferred by emulator_run.py)
+                    "actions": actions,      # String format (fallback)
+                    "metadata": {
+                        "extracted_at": datetime.now().isoformat(),
+                        "original_episode": episode_path,
+                        "evaluation_metrics": {
+                            "step_accuracy": result.get('step_accuracy', 0.0),
+                            "name_index_accuracy": result.get('name_index_accuracy', 0.0),
+                            "hallucination_rate": result.get('hallucination_rate', 0.0),
+                            "episode_reward": result.get('episode_reward', 0.0)
+                        }
+                    }
+                }
+                
+                # Generate filename
+                filename = f"{episode_name}__{model}__{variant}__{temp_variant}.json"
+                filepath = os.path.join(output_dir, filename)
+                
+                # Save JSON file
+                with open(filepath, 'w', encoding='utf-8') as f:
+                    json.dump(rollout_data, f, indent=2, ensure_ascii=False)
+                
+                generated_files.append(filepath)
+                
+                # Progress indicator
+                task = episode_name[:20] if len(episode_name) > 20 else episode_name
+                acc = result.get('step_accuracy', 0)
+                print(f"[{i+1:3d}/{len(self.results_data)}] {task:<20} {model:<8} {variant:<12} Acc:{acc:.3f} → {filename}")
+                
+            except Exception as e:
+                print(f"❌ Failed to extract rollout {i+1}: {e}")
+        
+        print(f"\n✅ Generated {len(generated_files)} rollout files in {output_dir}/")
+        
+        return generated_files
+    
+    def generate_emulator_test_commands(self, rollout_files: List[str], adb_path: str = "~/Library/Android/sdk/platform-tools"):
+        """Generate example commands for testing the rollouts."""
+        
+        if not rollout_files:
+            return
+        
+        print(f"\n📋 EXAMPLE EMULATOR TEST COMMANDS:")
+        print("=" * 60)
+        
+        # Single file example
+        example_file = rollout_files[0]
+        print(f"\n# Test single rollout:")
+        print(f"python scripts/emulator_run.py \\")
+        print(f"  --json {example_file} \\")
+        print(f"  --adb {adb_path} \\")
+        print(f"  --go-home-first --force-start-app --non-interactive --delay 1.0")
+        
+        # Batch testing example
+        output_dir = os.path.dirname(rollout_files[0])
+        print(f"\n# Test all rollouts in batch:")
+        print(f"for json_file in {output_dir}/*.json; do")
+        print(f"  echo \"Testing: $json_file\"")
+        print(f"  python scripts/emulator_run.py --json \"$json_file\" \\")
+        print(f"    --adb {adb_path} \\")
+        print(f"    --go-home-first --force-start-app --non-interactive --delay 1.0")
+        print(f"  echo \"Completed: $json_file\"")
+        print(f"  echo \"---\"")
+        print(f"done")
+        
+        # Interactive testing example
+        print(f"\n# Interactive testing (step by step):")
+        print(f"python scripts/emulator_run.py \\")
+        print(f"  --json {example_file} \\")
+        print(f"  --adb {adb_path} \\")
+        print(f"  --go-home-first --force-start-app")
+        print(f"  # (remove --non-interactive for manual stepping)")
+
+# ===== ENHANCED VISUALIZATION COMPONENTS =====
+
+def create_name_index_performance_dashboard(results_data: List[Dict], memory_system: EnhancedRLMemorySystem):
+    """Create enhanced dashboard with name-index performance metrics"""
+    
+    if not STREAMLIT_AVAILABLE:
+        return
+    
+    st.title("🤖 Android Agent Performance Dashboard")
+    st.markdown("**Comprehensive analysis of agent performance with name-index pair accuracy**")
+    
+    # Enhanced metrics overview
+    col1, col2, col3, col4, col5 = st.columns(5)
+    
+    if results_data:
+        avg_step_acc = np.mean([r['step_accuracy'] for r in results_data])
+        name_index_acc = np.mean([r.get('name_index_accuracy', 0) for r in results_data])
+        success_rate = np.mean([r['episode_success'] for r in results_data])
+        avg_halluc = np.mean([r['hallucination_rate'] for r in results_data])
+        total_episodes = len(results_data)
+        
+        col1.metric("Step Accuracy", f"{avg_step_acc:.3f}", f"{(avg_step_acc - 0.5):+.3f}")
+        col2.metric("Name-Index Accuracy", f"{name_index_acc:.3f}", f"{(name_index_acc - 0.4):+.3f}")
+        col3.metric("Episode Success Rate", f"{success_rate:.3f}", f"{(success_rate - 0.3):+.3f}")
+        col4.metric("Hallucination Rate", f"{avg_halluc:.3f}", f"{(0.1 - avg_halluc):+.3f}")
+        col5.metric("Episodes Completed", total_episodes)
+    
+    # Name-index accuracy over time
+    if results_data:
+        st.subheader("📈 Learning Progress")
+        
+        df = pd.DataFrame(results_data)
+        df['episode_id'] = range(len(df))
+        
+        fig = go.Figure()
+        
+        # Step accuracy
+        fig.add_trace(go.Scatter(
+            x=df['episode_id'],
+            y=df['step_accuracy'],
+            mode='lines+markers',
+            name='Step Accuracy',
+            line=dict(width=2, color='#1f77b4')
+        ))
+        
+        # Name-index accuracy
+        if 'name_index_accuracy' in df.columns:
+            fig.add_trace(go.Scatter(
+                x=df['episode_id'],
+                y=df['name_index_accuracy'],
+                mode='lines+markers',
+                name='Name-Index Accuracy',
+                line=dict(width=2, color='#ff7f0e')
+            ))
+        
+        # Hallucination rate
+        fig.add_trace(go.Scatter(
+            x=df['episode_id'],
+            y=df['hallucination_rate'],
+            mode='lines+markers',
+            name='Hallucination Rate',
+            line=dict(width=2, color='#d62728')
+        ))
+        
+        fig.update_layout(
+            title="Performance Trends with Name-Index Accuracy",
+            xaxis_title="Episode Number",
+            yaxis_title="Rate",
+            hovermode='x unified',
+            height=400
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+    
+    # Model and prompt comparison
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if results_data and len(set(r['variant'] for r in results_data)) > 1:
+            st.subheader("📊 Prompt Variant Performance")
+            variant_perf = defaultdict(lambda: {'step_acc': [], 'name_index_acc': []})
+            for result in results_data:
+                variant_perf[result['variant']]['step_acc'].append(result['step_accuracy'])
+                variant_perf[result['variant']]['name_index_acc'].append(result.get('name_index_accuracy', 0))
+            variants = list(variant_perf.keys())
+            step_accuracies = [np.mean(variant_perf[v]['step_acc']) for v in variants]
+            name_index_accuracies = [np.mean(variant_perf[v]['name_index_acc']) for v in variants]
+            fig = go.Figure(data=[
+                go.Bar(name='Step Accuracy', x=variants, y=step_accuracies, marker_color='#1f77b4'),
+                go.Bar(name='Name-Index Accuracy', x=variants, y=name_index_accuracies, marker_color='#ff7f0e')
+            ])
+            fig.update_layout(
+                title="Accuracy by Prompt Variant",
+                barmode='group',
+                height=350
+            )
+            st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        if results_data and len(set(r['model'] for r in results_data)) > 1:
+            st.subheader("🔬 Model Performance Comparison")
+            model_perf = defaultdict(lambda: {'step_acc': [], 'name_index_acc': []})
+            for result in results_data:
+                model_perf[result['model']]['step_acc'].append(result['step_accuracy'])
+                model_perf[result['model']]['name_index_acc'].append(result.get('name_index_accuracy', 0))
+            models = list(model_perf.keys())
+            model_step_accuracies = [np.mean(model_perf[m]['step_acc']) for m in models]
+            model_name_index_accuracies = [np.mean(model_perf[m]['name_index_acc']) for m in models]
+            fig = go.Figure(data=[
+                go.Bar(name='Step Accuracy', x=models, y=model_step_accuracies, marker_color='#2ca02c'),
+                go.Bar(name='Name-Index Accuracy', x=models, y=model_name_index_accuracies, marker_color='#d62728')
+            ])
+            fig.update_layout(
+                title="Accuracy by Model",
+                barmode='group',
+                height=350
+            )
+            st.plotly_chart(fig, use_container_width=True)
+    
+    # Enhanced memory system insights
+    st.subheader("🧠 Enhanced Memory System Insights")
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.write("**Top Name-Index Mappings:**")
+        if memory_system.name_index_mappings:
+            for name, indices in list(memory_system.name_index_mappings.items())[:8]:
+                if indices:
+                    most_common_index = max(set(indices), key=indices.count)
+                    frequency = len(indices)
+                    success_rate = indices.count(most_common_index) / len(indices)
+                    st.write(f"• `{name}` → index `{most_common_index}` ({success_rate:.1%}, n={frequency})")
+        else:
+            st.write("No mappings learned yet")
+    with col2:
+        st.write("**Element Mappings Learned:**")
+        if memory_system.ui_element_mappings:
+            for semantic, elements in list(memory_system.ui_element_mappings.items())[:8]:
+                st.write(f"• `{semantic}` → `{list(elements)}`")
+        else:
+            st.write("No mappings learned yet")
+    with col3:
+        st.write("**Interesting Behaviors Detected:**")
+        st.write(f"• Hallucinations: {len(memory_system.hallucination_examples)}")
+        st.write(f"• Misinterpretations: {len(memory_system.misinterpretation_examples)}")
+        st.write(f"• UI Reasoning Failures: {len(memory_system.ui_reasoning_failures)}")
+        total_behaviors = (len(memory_system.hallucination_examples) + 
+                          len(memory_system.misinterpretation_examples) + 
+                          len(memory_system.ui_reasoning_failures))
+        if total_behaviors > 0:
+            st.write(f"• **Total Issues: {total_behaviors}**")
 
 def run_comprehensive_benchmark(evaluator: NameIndexRLEvaluator, episode_paths: List[str]) -> Dict:
     """Run comprehensive benchmarking with temperature variants"""
@@ -1414,7 +1498,7 @@ def run_comprehensive_benchmark(evaluator: NameIndexRLEvaluator, episode_paths: 
     
     available_models = evaluator.get_available_models()
     if not available_models:
-        print("❌ No API keys found! Set at least one: OPENAI_API_KEY, ANTHROPIC_API_KEY, MISTRALAI_API_KEY")
+        print("❌ No API keys found! Set at least one: OPENAI_API_KEY, ANTHROPIC_API_KEY, MISTRAL_API_KEY")
         return {}
     
     print(f"Available models: {', '.join(available_models).upper()}")
@@ -1735,119 +1819,214 @@ def print_benchmark_summary(report: Dict):
     print(f"Benchmark completed in {report['metadata']['duration_seconds']:.1f} seconds")
     print(f"{'='*100}")
 
-def save_results_for_emulator_replay(evaluator: NameIndexRLEvaluator, output_dir: str = "emulator_replay_data"):
-    """Save evaluation results in format compatible with emulator_run.py"""
+def run_cli_evaluation_enhanced():
+    """Enhanced CLI version with comprehensive benchmarking"""
     
-    if not evaluator.results_data:
-        print("❌ No results to save for emulator replay")
-        return []
+    print("🤖 ANDROID AGENT EVALUATION & BENCHMARKING")
+    print("=" * 100)
+    print("Features: Name-Index Prediction | Multi-Model | RL Memory | Comprehensive Analysis")
+    print("=" * 100)
     
-    os.makedirs(output_dir, exist_ok=True)
-    saved_files = []
+    # Initialize evaluator
+    evaluator = NameIndexRLEvaluator()
     
-    # Group results by episode and create replay files
-    episode_groups = defaultdict(list)
-    for result in evaluator.results_data:
-        episode_key = f"{result['task_full']}_{result['model']}_{result['variant']}"
-        episode_groups[episode_key].append(result)
+    # Check available models
+    available_models = evaluator.get_available_models()
     
-    for episode_key, results in episode_groups.items():
-        # Take the best performing result for this episode
-        best_result = max(results, key=lambda x: x['step_accuracy'])
-        
-        # Convert to emulator replay format
-        replay_data = {
-            "task_name": best_result['task_category'],
-            "trial": "0", 
-            "goal": best_result['goal'],
-            "provider": best_result['model'],
-            "episode_path": best_result['episode'],
-            "created_at": datetime.now().isoformat(),
-            "steps": len(best_result['step_results']),
-            "actions": [step['predicted_action'] for step in best_result['step_results']],
-            "responses": [step['predicted_action_data'] for step in best_result['step_results']],
-            "step_records": best_result['step_results']
-        }
-        
-        # Save in emulator_run.py compatible format
-        filename = f"{episode_key}.json"
-        filepath = os.path.join(output_dir, filename)
-        
-        with open(filepath, 'w') as f:
-            json.dump(replay_data, f, indent=2, default=str)
-        
-        saved_files.append(filepath)
-        print(f"💾 Saved replay data: {filename}")
+    print(f"\n🔑 Model API Status:")
+    all_models = ["openai", "claude", "mistral"]
+    for model in all_models:
+        if model in available_models:
+            print(f"  ✅ {model.upper()}: API key found")
+        else:
+            api_key_map = {
+                "openai": "OPENAI_API_KEY",
+                "claude": "ANTHROPIC_API_KEY", 
+                "mistral": "MISTRAL_API_KEY"
+            }
+            print(f"  ❌ {model.upper()}: Missing {api_key_map[model]}")
     
-    return saved_files
-
-def create_emulator_integration_dashboard():
-    """Create Streamlit section for emulator integration"""
-    
-    if not STREAMLIT_AVAILABLE:
+    if not available_models:
+        print("\n❌ ERROR: No API keys found! Set at least one:")
+        print("  export OPENAI_API_KEY='your_key'")
+        print("  export ANTHROPIC_API_KEY='your_key'")
+        print("  export MISTRAL_API_KEY='your_key'")
+        print("\nFor Mistral via OpenAI interface, also set:")
+        print("  export MISTRAL_BASE_URL='https://api.mistral.ai/v1'  # (optional, defaults to this)")
         return
     
-    st.subheader("🎮 Emulator Integration")
-    st.write("Test your best-performing predictions on a real Android emulator")
+    print(f"\n🧪 Testing {len(available_models)} model(s): {', '.join(available_models).upper()}")
     
-    # Check if results exist
-    if 'evaluator' not in st.session_state or not st.session_state.evaluator.results_data:
-        st.info("Run evaluations first to enable emulator testing")
+    # Find episodes
+    episode_dir = "runs/run_20250720T123202422603"
+    if not os.path.exists(episode_dir):
+        print(f"❌ ERROR: Directory {episode_dir} does not exist!")
         return
     
-    evaluator = st.session_state.evaluator
+    episodes = glob.glob(f"{episode_dir}/*.pkl.gz")
+    print(f"📁 Found {len(episodes)} episodes in {episode_dir}")
     
-    col1, col2 = st.columns(2)
+    if len(episodes) < 5:
+        print(f"❌ ERROR: Need at least 5 episodes, found {len(episodes)}")
+        return
     
-    with col1:
-        st.write("**📊 Available Results:**")
-        st.write(f"• Total evaluations: {len(evaluator.results_data)}")
-        st.write(f"• Best step accuracy: {max(r['step_accuracy'] for r in evaluator.results_data):.3f}")
-        st.write(f"• Episodes with results: {len(set(r['episode'] for r in evaluator.results_data))}")
+    # Run comprehensive benchmark
+    print(f"\n🚀 STARTING COMPREHENSIVE BENCHMARK...")
     
-    with col2:
-        st.write("**🎯 Emulator Options:**")
+    start_time = datetime.now()
+    benchmark_report = run_comprehensive_benchmark(evaluator, episodes)
+    end_time = datetime.now()
+    
+    # Generate output files
+    if benchmark_report:
+        print(f"\n📄 GENERATING OUTPUT FILES...")
         
-        # Generate replay files button
-        if st.button("📁 Generate Emulator Replay Files"):
-            with st.spinner("Generating replay files..."):
-                saved_files = save_results_for_emulator_replay(evaluator)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = "evaluation_output"
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # JSON report
+        json_file = os.path.join(output_dir, f"comprehensive_benchmark_{timestamp}.json")
+        with open(json_file, 'w') as f:
+            json.dump(benchmark_report, f, indent=2, default=str)
+        
+        # CSV summary
+        csv_file = os.path.join(output_dir, f"benchmark_summary_{timestamp}.csv")
+        with open(csv_file, 'w', newline='') as f:
+            import csv
+            writer = csv.writer(f)
             
-            if saved_files:
-                st.success(f"✅ Generated {len(saved_files)} replay files")
-                st.write("**Generated files:**")
-                for file in saved_files:
-                    st.write(f"• {os.path.basename(file)}")
-                
-                # Provide emulator command examples
-                st.subheader("🚀 Run on Emulator")
-                st.write("Use these commands to test on your Android emulator:")
-                
-                example_file = os.path.basename(saved_files[0]) if saved_files else "example.json"
-                st.code(f"""# Basic emulator replay
-python emulator_run.py \\
-  --json emulator_replay_data/{example_file} \\
-  --adb ~/Library/Android/sdk/platform-tools \\
-  --non-interactive \\
-  --delay 2.0
+            writer.writerow([
+                'Episode', 'Model', 'Strategy', 'Temperature', 'Temperature_Variant', 'Task_Category', 
+                'Step_Accuracy', 'Name_Index_Accuracy', 'Episode_Success', 'Hallucination_Rate', 
+                'RL_Reward', 'Total_Steps'
+            ])
+            
+            for result in evaluator.results_data:
+                writer.writerow([
+                    os.path.basename(result['episode']),
+                    result['model'],
+                    result['variant'],
+                    result['temperature'],
+                    result.get('temperature_variant', f"T={result['temperature']:.1f}"),
+                    result['task_category'],
+                    result['step_accuracy'],
+                    result.get('name_index_accuracy', 0),
+                    result['episode_success'],
+                    result['hallucination_rate'],
+                    result['episode_reward'],
+                    result['total_steps']
+                ])
+        
+        print(f"✅ Files Generated:")
+        print(f"  📄 JSON Report: {json_file}")
+        print(f"  📊 CSV Summary: {csv_file}")
+    
+    total_duration = (end_time - start_time).total_seconds()
+    
+    print(f"\n🎉 EVALUATION COMPLETE!")
+    print(f"   ⏱️ Total Duration: {total_duration:.1f} seconds")
+    print(f"   📊 Base Episodes: {len(set(os.path.basename(r['episode']) for r in evaluator.results_data)) // 2}")  # Divide by 2 temp variants
+    episode_variants_count = len({f"{os.path.basename(r['episode'])}_{r['temperature']}" for r in evaluator.results_data})
+    print(f"   🌡️ Episode Variants (with temperature): {episode_variants_count}")
+    print(f"   🔢 Total Evaluations: {len(evaluator.results_data)}")
+    print(f"   🤖 Models Tested: {len(available_models)}")
+    print(f"   🌡️ Temperature Variants: 2 (Deterministic, Balanced)")
+    print(f"   🧠 Name-Index Mappings Learned: {len(evaluator.memory_system.name_index_mappings)}")
+    print(f"   ✅ Met 10+ episode requirement via temperature variants!")
 
-# Interactive mode with debugging
-python emulator_run.py \\
-  --json emulator_replay_data/{example_file} \\
-  --adb ~/Library/Android/sdk/platform-tools \\
-  --go-home-first \\
-  --force-start-app
+def run_cli_evaluation_with_rollout_extraction():
+    """Enhanced CLI version that generates evaluation results AND extracts rollouts for emulator testing"""
+    
+    print("🤖 ANDROID AGENT EVALUATION ")
+    print("=" * 100)
+    #print("Features: Name-Index Prediction | Multi-Model | Direct Emulator Testing")
+    #print("=" * 100)
+    
+    # Initialize evaluator
+    evaluator = NameIndexRLEvaluator()
+    available_models = evaluator.get_available_models()
+    
+    print(f"\n🔑 Model API Status:")
+    all_models = ["openai", "claude", "mistral"]
+    for model in all_models:
+        if model in available_models:
+            print(f"  ✅ {model.upper()}: API key found")
+        else:
+            api_key_map = {
+                "openai": "OPENAI_API_KEY",
+                "claude": "ANTHROPIC_API_KEY", 
+                "mistral": "MISTRAL_API_KEY"
+            }
+            print(f"  ❌ {model.upper()}: Missing {api_key_map[model]}")
+    
+    if not available_models:
+        print("\n❌ ERROR: No API keys found!")
+        return
+    
+    # Find episodes
+    episode_dir = "runs/run_20250720T123202422603"
+    if not os.path.exists(episode_dir):
+        print(f"❌ ERROR: Directory {episode_dir} does not exist!")
+        return
+    
+    episodes = glob.glob(f"{episode_dir}/*.pkl.gz")
+    print(f"📁 Found {len(episodes)} episodes in {episode_dir}")
+    
+    if len(episodes) < 5:
+        print(f"❌ ERROR: Need at least 5 episodes, found {len(episodes)}")
+        return
+    
+    # Run evaluation
+    print(f"\n🚀 STARTING EVALUATION...")
+    benchmark_report = run_comprehensive_benchmark(evaluator, episodes)
+    
+    # Extract rollouts for emulator testing
+    if evaluator.results_data:
+        print(f"\n🎬 EXTRACTING ROLLOUTS FOR EMULATOR TESTING...")
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        rollout_dir = f"emulator_rollouts_{timestamp}"
+        
+        # Extract rollouts directly from evaluation results
+        generated_files = evaluator.extract_rollouts_from_results(output_dir=rollout_dir)
+        
+        if generated_files:
+            # Generate test commands
+            evaluator.generate_emulator_test_commands(generated_files)
+            
+            print(f"\n🎯 EMULATOR TESTING READY:")
+            print(f"Directory: {rollout_dir}/")
+            print(f"Files: {len(generated_files)}")
+            print(f"\n📋 TO START EMULATOR TESTING:")
+            print(f"1. Start Android emulator: emulator -avd your_avd_name -port 5554")
+            print(f"2. Test single file with commands shown above")
+            print(f"3. Run batch testing if single test works")
+    
+    # Generate evaluation outputs
+    if benchmark_report:
+        print(f"\n📄 GENERATING EVALUATION OUTPUTS...")
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = "evaluation_output"
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # JSON report
+        json_file = os.path.join(output_dir, f"comprehensive_benchmark_{timestamp}.json")
+        with open(json_file, 'w') as f:
+            json.dump(benchmark_report, f, indent=2, default=str)
+        
+        print(f"✅ Evaluation report: {json_file}")
+    
+    print(f"\n🎉 COMPLETE! You now have:")
+    print(f"   📊 Evaluation results in evaluation_output/")
+    if 'rollout_dir' in locals():
+        print(f"   🎬 Emulator rollouts in {rollout_dir}/")
+    print(f"   🧪 Ready for emulator testing with scripts/emulator_run.py")
 
-# Batch testing all files
-for file in emulator_replay_data/*.json; do
-  echo "Testing $file"
-  python emulator_run.py --json "$file" --non-interactive --delay 1.5
-done""")
-            else:
-                st.error("❌ Failed to generate replay files")
 
 def main_streamlit_app_enhanced():
-    """Enhanced Streamlit application with name-index prediction and emulator integration"""
+    """Enhanced Streamlit application with name-index prediction and fixed Mistral integration"""
     
     if not STREAMLIT_AVAILABLE:
         print("❌ Streamlit not available. Install with: pip install streamlit plotly pandas")
@@ -1906,7 +2085,7 @@ def main_streamlit_app_enhanced():
                 help="Models require API keys to be set as environment variables"
             )
         else:
-            st.sidebar.error("No API keys found! Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or MISTRALAI_API_KEY")
+            st.sidebar.error("No API keys found! Set OPENAI_API_KEY, ANTHROPIC_API_KEY, or MISTRAL_API_KEY")
             selected_models = []
         
         # Strategy selection
@@ -2028,9 +2207,6 @@ def main_streamlit_app_enhanced():
         # Enhanced download options
         st.subheader("📥 Export Results")
         
-        # Add emulator integration section
-        create_emulator_integration_dashboard()
-        
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -2117,7 +2293,7 @@ def main_streamlit_app_enhanced():
         api_keys = {
             "OpenAI": "OPENAI_API_KEY",
             "Anthropic": "ANTHROPIC_API_KEY", 
-            "Mistral": "MISTRALAI_API_KEY"
+            "Mistral": "MISTRAL_API_KEY"
         }
         
         for service, env_key in api_keys.items():
@@ -2129,321 +2305,108 @@ def main_streamlit_app_enhanced():
         if not any(os.environ.get(key) for key in api_keys.values()):
             st.warning("⚠️ No API keys found. Set environment variables to enable model testing.")
 
-def run_cli_evaluation_enhanced():
-    """Enhanced CLI version with comprehensive benchmarking"""
+def create_episode_progress_viewer_enhanced(episode_data: Dict, step_results: List[Dict]):
+    """Create enhanced episode progress viewer with name-index details"""
     
-    print("🤖 ANDROID AGENT EVALUATION & BENCHMARKING")
-    print("=" * 100)
-    print("Features: Name-Index Prediction | Multi-Model | RL Memory | Comprehensive Analysis")
-    print("=" * 100)
+    if not STREAMLIT_AVAILABLE:
+        return
     
-    # Initialize evaluator
-    evaluator = NameIndexRLEvaluator()
+    st.subheader(f"🎯 Episode Progress: {episode_data.get('goal', 'Unknown Goal')}")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.write(f"**Task:** {episode_data.get('task_full', 'Unknown')}")
+    col2.write(f"**Model:** {episode_data.get('model', 'Unknown')}")
+    col3.write(f"**Variant:** {episode_data.get('variant', 'Unknown')}")
+    col4.write(f"**Steps:** {len(step_results)}")
     
-    # Check available models
-    available_models = evaluator.get_available_models()
+    step_selector = st.slider("Select Step", 1, len(step_results), 1)
+    selected_step = step_results[step_selector - 1]
     
-    print(f"\n🔑 Model API Status:")
-    all_models = ["openai", "claude", "mistral"]
-    for model in all_models:
-        if model in available_models:
-            print(f"  ✅ {model.upper()}: API key found")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("**Predicted Action:**")
+        predicted_action = selected_step.get('predicted_action_data', {})
+        if predicted_action:
+            st.json({
+                "action_type": predicted_action.get('action_type', ''),
+                "name": predicted_action.get('name', ''),
+                "index": predicted_action.get('index', -1),
+                "reasoning": predicted_action.get('reasoning', '')
+            })
         else:
-            api_key_map = {
-                "openai": "OPENAI_API_KEY",
-                "claude": "ANTHROPIC_API_KEY", 
-                "mistral": "MISTRALAI_API_KEY"
-            }
-            print(f"  ❌ {model.upper()}: Missing {api_key_map[model]}")
-    
-    if not available_models:
-        print("\n❌ ERROR: No API keys found! Set at least one:")
-        print("  export OPENAI_API_KEY='your_key'")
-        print("  export ANTHROPIC_API_KEY='your_key'")
-        print("  export MISTRALAI_API_KEY='your_key'")
-        return
-    
-    print(f"\n🧪 Testing {len(available_models)} model(s): {', '.join(available_models).upper()}")
-    
-    # Find episodes
-    episode_dir = "runs/run_20250720T123202422603"
-    if not os.path.exists(episode_dir):
-        print(f"❌ ERROR: Directory {episode_dir} does not exist!")
-        return
-    
-    episodes = glob.glob(f"{episode_dir}/*.pkl.gz")
-    print(f"📁 Found {len(episodes)} episodes in {episode_dir}")
-    
-    if len(episodes) < 5:
-        print(f"❌ ERROR: Need at least 5 episodes, found {len(episodes)}")
-        return
-    
-    # Run comprehensive benchmark
-    print(f"\n🚀 STARTING COMPREHENSIVE BENCHMARK...")
-    
-    start_time = datetime.now()
-    benchmark_report = run_comprehensive_benchmark(evaluator, episodes)
-    end_time = datetime.now()
-    
-    # Generate output files
-    if benchmark_report:
-        print(f"\n📄 GENERATING OUTPUT FILES...")
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_dir = "evaluation_output"
-        os.makedirs(output_dir, exist_ok=True)
-        
-        # JSON report
-        json_file = os.path.join(output_dir, f"comprehensive_benchmark_{timestamp}.json")
-        with open(json_file, 'w') as f:
-            json.dump(benchmark_report, f, indent=2, default=str)
-        
-        # CSV summary
-        csv_file = os.path.join(output_dir, f"benchmark_summary_{timestamp}.csv")
-        with open(csv_file, 'w', newline='') as f:
-            import csv
-            writer = csv.writer(f)
-            
-            writer.writerow([
-                'Episode', 'Model', 'Strategy', 'Temperature', 'Temperature_Variant', 'Task_Category', 
-                'Step_Accuracy', 'Name_Index_Accuracy', 'Episode_Success', 'Hallucination_Rate', 
-                'RL_Reward', 'Total_Steps'
-            ])
-            
-            for result in evaluator.results_data:
-                writer.writerow([
-                    os.path.basename(result['episode']),
-                    result['model'],
-                    result['variant'],
-                    result['temperature'],
-                    result.get('temperature_variant', f"T={result['temperature']:.1f}"),
-                    result['task_category'],
-                    result['step_accuracy'],
-                    result.get('name_index_accuracy', 0),
-                    result['episode_success'],
-                    result['hallucination_rate'],
-                    result['episode_reward'],
-                    result['total_steps']
-                ])
-        
-        # Markdown report
-        md_file = os.path.join(output_dir, f"benchmark_report_{timestamp}.md")
-        with open(md_file, 'w') as f:
-            f.write(generate_markdown_report(benchmark_report))
-        
-        print(f"✅ Files Generated:")
-        print(f"  📄 JSON Report: {json_file}")
-        print(f"  📊 CSV Summary: {csv_file}")
-        print(f"  📋 Markdown Report: {md_file}")
-        
-        # Generate emulator replay files
-        print(f"\n🎮 GENERATING EMULATOR REPLAY FILES...")
-        replay_files = save_results_for_emulator_replay(evaluator, os.path.join(output_dir, "emulator_replay_data"))
-        
-        if replay_files:
-            print(f"🎯 Emulator Integration:")
-            print(f"   Generated {len(replay_files)} replay files")
-            print(f"   Location: {output_dir}/emulator_replay_data/")
-            print(f"\n🚀 To test on emulator:")
-            example_file = os.path.basename(replay_files[0])
-            print(f"   python emulator_run.py --json {output_dir}/emulator_replay_data/{example_file} --non-interactive")
-        else:
-            print("⚠️  No emulator replay files generated")
-    
-    total_duration = (end_time - start_time).total_seconds()
-    
-    print(f"\n🎉 EVALUATION COMPLETE!")
-    print(f"   ⏱️ Total Duration: {total_duration:.1f} seconds")
-    print(f"   📊 Base Episodes: {len(set(os.path.basename(r['episode']) for r in evaluator.results_data)) // 2}")  # Divide by 2 temp variants
-    episode_variants_count = len({f"{os.path.basename(r['episode'])}_{r['temperature']}" for r in evaluator.results_data})
-    print(f"   🌡️ Episode Variants (with temperature): {episode_variants_count}")
-    print(f"   🔢 Total Evaluations: {len(evaluator.results_data)}")
-    print(f"   🤖 Models Tested: {len(available_models)}")
-    print(f"   🌡️ Temperature Variants: 2 (Deterministic, Balanced)")
-    print(f"   🧠 Name-Index Mappings Learned: {len(evaluator.memory_system.name_index_mappings)}")
-    print(f"   ✅ Met 10+ episode requirement via temperature variants!")
-    print("")
-
-def generate_markdown_report(benchmark_report: Dict) -> str:
-    """Generate markdown report from benchmark results"""
-    
-    overall = benchmark_report['overall_metrics']
-    
-    md = f"""# Android Agent Benchmark Report - Name-Index Prediction
-
-## Executive Summary
-
-**Evaluation Type:** {benchmark_report['metadata']['evaluation_type']}  
-**Duration:** {benchmark_report['metadata']['duration_seconds']:.1f} seconds  
-**Timestamp:** {benchmark_report['metadata']['timestamp']}
-
-## Overall Performance Metrics
-
-| Metric | Value | Percentage |
-|--------|--------|------------|
-| Episodes Tested | {overall['total_episodes']} | - |
-| Average Step Accuracy | {overall['average_step_accuracy']:.3f} | {overall['average_step_accuracy']*100:.1f}% |
-| Average Name-Index Accuracy | {overall['average_name_index_accuracy']:.3f} | {overall['average_name_index_accuracy']*100:.1f}% |
-| Episode Success Rate | {overall['episode_success_rate']:.3f} | {overall['episode_success_rate']*100:.1f}% |
-| Hallucination Rate | {overall['hallucination_rate']:.3f} | {overall['hallucination_rate']*100:.1f}% |
-| Average RL Reward | {overall['average_reward']:.1f} | - |
-
-## Model Performance Comparison
-
-| Rank | Model | Step Accuracy | Name-Index Accuracy | Success Rate | Hallucination Rate |
-|------|-------|---------------|-------------------|--------------|-------------------|
-"""
-    
-    # Model ranking
-    model_ranking = sorted(benchmark_report['model_comparison'].items(), 
-                          key=lambda x: x[1]['step_accuracy'], reverse=True)
-    
-    for i, (model, data) in enumerate(model_ranking):
-        rank = i + 1
-        md += f"| {rank} | {model.upper()} | {data['step_accuracy']:.3f} | {data['name_index_accuracy']:.3f} | {data['success_rate']:.3f} | {data['hallucination_rate']:.3f} |\n"
-    
-    md += f"""
-## Strategy Performance Comparison
-
-| Rank | Strategy | Step Accuracy | Name-Index Accuracy | Success Rate |
-|------|----------|---------------|-------------------|--------------|
-"""
-    
-    # Strategy ranking
-    strategy_ranking = sorted(benchmark_report['strategy_comparison'].items(), 
-                             key=lambda x: x[1]['step_accuracy'], reverse=True)
-    
-    for i, (strategy, data) in enumerate(strategy_ranking):
-        rank = i + 1
-        strategy_name = strategy.replace('_', ' ').title()
-        md += f"| {rank} | {strategy_name} | {data['step_accuracy']:.3f} | {data['name_index_accuracy']:.3f} | {data['success_rate']:.3f} |\n"
-    
-    # Temperature analysis
-    if 'temperature_analysis' in benchmark_report:
-        md += f"""
-## Temperature Variant Analysis
-
-| Rank | Temperature | Step Accuracy | Name-Index Accuracy | Success Rate | Hallucination Rate |
-|------|-------------|---------------|-------------------|--------------|-------------------|
-"""
-        
-        # Temperature ranking
-        temp_ranking = sorted(benchmark_report['temperature_analysis'].items(), 
-                             key=lambda x: x[1]['step_accuracy'], reverse=True)
-        
-        for i, (temp_variant, data) in enumerate(temp_ranking):
-            rank = i + 1
-            md += f"| {rank} | {temp_variant} | {data['step_accuracy']:.3f} | {data['name_index_accuracy']:.3f} | {data['success_rate']:.3f} | {data['hallucination_rate']:.3f} |\n"
-        
-        md += f"""
-### Temperature Insights
-
-"""
-        for temp_variant, data in temp_ranking:
-            if temp_variant == "Deterministic":
-                insight = "Most consistent and reliable responses"
-            elif temp_variant == "Balanced":
-                insight = "Good balance of creativity and consistency"
+            st.code(selected_step.get('predicted_action', 'N/A'))
+        st.write("**Ground Truth:**")
+        st.code(selected_step['ground_truth'])
+        exact_match = "✅ Exact Match" if selected_step.get('exact_match', False) else "❌ No Match"
+        name_index_consistency = "✅ Consistent" if selected_step.get('name_index_consistent', False) else "❌ Inconsistent"
+        name_index_ground_truth = "✅ Matches GT" if selected_step.get('name_index_match', False) else "❌ GT Mismatch"
+        halluc_status = "❌ Hallucination" if selected_step.get('is_hallucination', False) else "✅ Valid"
+        st.write(f"**Status:** {exact_match} | {name_index_consistency} | {name_index_ground_truth} | {halluc_status}")
+        confidence = selected_step.get('confidence', 0.5)
+        reward = selected_step.get('reward', 0)
+        st.write(f"**Confidence:** {confidence:.2f} | **Reward:** {reward:+.1f}")
+    with col2:
+        st.write("**UI Elements Available:**")
+        ui_elements = selected_step.get('ui_elements', [])
+        target_index = predicted_action.get('index', -1) if predicted_action else -1
+        for i, elem in enumerate(ui_elements[:12]):
+            elem_text = elem.get('label', f"element_{elem.get('index', i)}")
+            elem_index = elem.get('index', i)
+            if elem_index == target_index:
+                st.write(f"🎯 **[{elem_index}] {elem_text}** (TARGET)")
             else:
-                insight = "Custom temperature setting"
-                
-            md += f"- **{temp_variant}** (Episodes: {data['episodes']}): {insight}\n"
-            md += f"  - Step Accuracy: {data['step_accuracy']:.3f}, Success Rate: {data['success_rate']:.3f}\n"
+                st.write(f"• [{elem_index}] {elem_text}")
+        if len(ui_elements) > 12:
+            st.write(f"... and {len(ui_elements) - 12} more")
     
-    md += f"""
-## Failure Analysis
-
-| Issue Type | Count |
-|------------|-------|"""
-    
-    # Failure analysis
-    failures = benchmark_report['failure_analysis']
-    md += f"""
-| Hallucinations | {failures['total_hallucinations']} |
-| Misinterpretations | {failures['total_misinterpretations']} |
-| Name-Index Mismatches | {failures['total_name_index_mismatches']} |
-| Parsing Errors | {failures['parsing_errors']} |
-
-**Total Issues Detected:** {sum(failures.values())}
-
-"""
-    
-    # Learning progression
-    if 'learning_progression' in benchmark_report and benchmark_report['learning_progression']:
-        learning = benchmark_report['learning_progression']
-        md += f"""## Learning Progression
-
-- **Early Episodes Average Reward:** {learning['early_average_reward']:.1f}
-- **Late Episodes Average Reward:** {learning['late_average_reward']:.1f}
-- **Improvement:** {learning['improvement']:+.1f}
-- **Learning Detected:** {'✅ Yes' if learning['learning_detected'] else '❌ No'}
-
-"""
-    
-    # Memory insights
-    memory = benchmark_report['memory_insights']
-    md += f"""## Memory System Insights
-
-- **Name-Index Mappings Learned:** {memory['total_name_index_mappings']}
-- **Element Mappings Learned:** {memory['total_element_mappings']}
-- **Action History Entries:** {memory['total_action_history_entries']}
-
-### Top Name-Index Pairs
-
-| Pair | Success Rate | Frequency |
-|------|--------------|-----------|
-"""
-    
-    for pair_data in memory['most_successful_name_index_pairs'][:5]:
-        md += f"| {pair_data['pair']} | {pair_data['success_rate']:.2f} | {pair_data['frequency']} |\n"
-    
-    md += f"""
-## Key Findings
-
-### Best Performing Combination
-"""
-    
-    if model_ranking and strategy_ranking:
-        best_model = model_ranking[0][0]
-        best_strategy = strategy_ranking[0][0]
-        md += f"- **Best Model:** {best_model.upper()} ({model_ranking[0][1]['step_accuracy']:.3f} step accuracy)\n"
-        md += f"- **Best Strategy:** {best_strategy.replace('_', ' ').title()} ({strategy_ranking[0][1]['step_accuracy']:.3f} step accuracy)\n"
-    
-    md += f"""
-
-### Recommendations
-
-1. **Model Selection:** Use {model_ranking[0][0].upper()} for best overall performance
-2. **Prompting Strategy:** Implement {strategy_ranking[0][0].replace('_', ' ').title()} strategy for optimal results
-3. **Name-Index Prediction:** Focus on improving name-index consistency (current: {overall['average_name_index_accuracy']:.1%})
-4. **Hallucination Reduction:** Address {failures['total_hallucinations']} hallucination cases through better validation
-5. **Memory Integration:** Leverage learned mappings ({memory['total_name_index_mappings']} patterns) for improved performance
-
----
-
-*Report generated automatically by Android Agent Evaluation Framework*
-"""
-    
-    return md
+    # Progress visualization
+    progress_data = []
+    for i, step in enumerate(step_results):
+        progress_data.append({
+            'step': i + 1,
+            'exact_match': 1 if step.get('exact_match', False) else 0,
+            'name_index_consistent': 1 if step.get('name_index_consistent', False) else 0,
+            'name_index_match': 1 if step.get('name_index_match', False) else 0,
+            'hallucination': 1 if step.get('is_hallucination', False) else 0,
+            'reward': step.get('reward', 0)
+        })
+    df = pd.DataFrame(progress_data)
+    fig = go.Figure()
+    fig.add_trace(go.Bar(x=df['step'], y=df['exact_match'], name='Exact Match', marker_color='#2ca02c'))
+    fig.add_trace(go.Bar(x=df['step'], y=df['name_index_consistent'], name='Name-Index Consistent', marker_color='#1f77b4'))
+    fig.add_trace(go.Bar(x=df['step'], y=df['name_index_match'], name='Name-Index GT Match', marker_color='#ff7f0e'))
+    fig.add_trace(go.Bar(x=df['step'], y=df['hallucination'], name='Hallucination', marker_color='#d62728'))
+    fig.update_layout(
+        title="Step-by-Step Performance",
+        xaxis_title="Step Number",
+        yaxis_title="Success (1) / Failure (0)",
+        barmode='overlay',
+        height=350
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
 if __name__ == "__main__":
     import sys
     
-    if "--streamlit" in sys.argv:
+    if "--with-emulator" in sys.argv or "--emulator" in sys.argv:
+        run_cli_evaluation_with_rollout_extraction()
+    elif "--streamlit" in sys.argv:
         if STREAMLIT_AVAILABLE:
             main_streamlit_app_enhanced()
         else:
-            print("❌ Streamlit not available. Install with:")
-            print("   pip install streamlit plotly pandas")
-            print("\nRunning CLI version instead...")
-            run_cli_evaluation_enhanced()
+            print("❌ Streamlit not available. Running CLI with emulator extraction instead...")
+            run_cli_evaluation_with_rollout_extraction()
     elif "--benchmark" in sys.argv:
         run_cli_evaluation_enhanced()
     elif "--cli" in sys.argv or len(sys.argv) == 1:
         run_cli_evaluation_enhanced()
     else:
         print("Usage:")
-        print("  python enhanced_evaluation.py           # Run CLI evaluation")
-        print("  python enhanced_evaluation.py --cli     # Run CLI evaluation")  
-        print("  python enhanced_evaluation.py --benchmark  # Run comprehensive benchmark")
-        print("  python enhanced_evaluation.py --streamlit  # Run Streamlit dashboard")
+        print("  python enhanced_evaluation.py                    # Run CLI evaluation")
+        print("  python enhanced_evaluation.py --emulator         # Run evaluation + extract emulator rollouts")
+        print("  python enhanced_evaluation.py --with-emulator    # Run evaluation + extract emulator rollouts")  
+        print("  python enhanced_evaluation.py --benchmark        # Run comprehensive benchmark")
+        print("  python enhanced_evaluation.py --streamlit        # Run Streamlit dashboard")
+        print("")
+        print("Emulator rollouts can be replayed with:")
+        print("  python scripts/emulator_run.py --json <rollout.json> --adb <adb_path> --non-interactive")
+        
