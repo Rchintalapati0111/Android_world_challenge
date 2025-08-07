@@ -5,7 +5,7 @@ Enhanced Android Agent with Name-Index Prediction, RL, and Comprehensive Benchma
 - Enhanced validation with element mapping
 - Comprehensive benchmarking with temperature variants (5 episodes × 2 temperatures = 10 variants)
 - Failure analysis and interesting behavior detection
-- Advanced visualization with Streamlit dashboard (no emulator dependencies)
+- Advanced visualization with Streamlit dashboard 
 - Memory buffer with full action/observation history
 - SIMPLIFIED: All models use OpenAI-compatible interface (including Mistral via OpenAI-compatible endpoints)
 
